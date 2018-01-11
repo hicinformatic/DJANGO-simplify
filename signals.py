@@ -8,7 +8,7 @@ from .models import Task
 def TaskStarting(sender, instance, created, **kwargs):
     if created:
         instance.prepare()
-        #instance.can_run()
-    #else:
-        #if instance.status == conf.choices.status_ready:
-        #    instance.start_task()
+        instance.can_run()
+    else:
+        if instance.status == conf.choices.status_ready:
+            instance.start_task()

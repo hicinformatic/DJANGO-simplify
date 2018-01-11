@@ -230,3 +230,27 @@ class Task(Update):
         prepare['password']         = conf.task.password
         self.local_check = conf.task.local_check.format(**prepare)
         self.save()
+
+    def can_run(self):
+        if self.status != conf.choices.status_order:
+            self.error = conf.error.not_order
+            self.save()
+            return False
+        try: 
+            subprocess.check_call(self.local_check, shell=True)
+            return True
+        except subprocess.CalledProcessError as error:
+            self.error = error
+        return False
+
+    def start_task(self):
+        if self.status != conf.choices.status_ready:
+            self.error = conf.error.not_ready
+            self.save()
+            return False
+        try: 
+            subprocess.check_call(self.command, shell=True)
+            return True
+        except subprocess.CalledProcessError as error:
+            self.error = error
+        return False

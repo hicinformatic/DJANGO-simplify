@@ -22,6 +22,8 @@ class Config(object):
         inactive        = _("This account is inactive.")
         user_notfound   = _('User Not Found')
         credentials     = _('Invalid credentials')
+        not_order       = _('Not ordered, check status')
+        not_ready       = _('Not ready, check status')
 
 
     class message(object):
