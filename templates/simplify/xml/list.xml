@@ -1,0 +1,19 @@
+{% load i18n simplify %}{% block content %}<?xml version="1.0" encoding="UTF-8"?>
+<objects>{% for object in object_list %}
+    <object pk="{{ object.pk }}">
+        <detail>{% for field in fields_detail %}
+            <field>
+                <name>{{ field }}</name>{% if field in fields_relation %}{% getrelation object field as sub %}
+                <value>
+                    <relations>{% for s in sub.relations %}
+                        <object str="{{ s }}">{% for sfield in sub.fields %}
+                            <value field="{{ sfield }}">{% getattribute s sfield %}</value>{% endfor %}
+                        </object>{% endfor %}
+                    </relations>
+                </value>{% else %}
+                <value>{% getattribute object field %}</value>{% endif %}
+            </field>{% endfor %}
+        </detail>
+    </object>{% endfor %}
+</objects>
+{% endblock %}

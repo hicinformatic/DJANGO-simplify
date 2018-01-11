@@ -1,0 +1,30 @@
+{% load i18n simplify %}
+{% block content %}
+<section class="detail">
+    <h1>{{ object }}</h1>
+    <table>
+        <tr>
+            <th>{% trans 'Field' %}</th>
+            <th>{% trans 'Value' %}</th>
+        </tr>{% for field in fields_detail %}{% if field in fields_relation %}{% getrelation object field as sub %}
+        <tr>
+            <td>{{ field }}</td>
+            <td>{% for s in sub.relations %}
+                <table>{% for sfield in sub.fields %}
+                    <tr>
+                        <th colspan="2">{{ s }}</th>
+                     </tr>
+                    <tr>
+                        <td>{{ sfield }}</td>
+                        <td>{% getattribute s sfield %}</td>
+                    </tr>{% endfor %}
+                </table>{% endfor %}
+            </td>
+        </tr>{% else %}
+        <tr>
+            <td>{{ field }}</td>
+            <td>{% getattribute object field %}</td>
+        </tr>{% endif %}{% endfor %}
+    </table>
+</section>
+{% endblock %}

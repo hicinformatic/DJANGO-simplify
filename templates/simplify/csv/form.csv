@@ -1,0 +1,3 @@
+"label","help"
+{% for field in form %}"{{ field.html_name }}","{{ field.help_text }}"
+{% endfor %}"token","{{ csrf_token }}"

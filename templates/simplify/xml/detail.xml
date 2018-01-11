@@ -1,0 +1,14 @@
+{% load simplify %}<?xml version="1.0" encoding="UTF-8"?>
+<detail>{% for field in fields_detail %}
+    <field>
+        <name>{{ field }}</name>{% if field in fields_relation %}{% getrelation object field as sub %}
+        <value>
+            <relations>{% for s in sub.relations %}
+                <object str="{{ s }}">{% for sfield in sub.fields %}
+                    <value field="{{ sfield }}">{% getattribute s sfield %}</value>{% endfor %}
+                </object>{% endfor %}
+            </relations>
+        </value>{% else %}
+        <value>{% getattribute object field %}</value>{% endif %}
+    </field>{% endfor %}
+</detail>

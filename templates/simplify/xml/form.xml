@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form>
+    {% for field in form %}<field>
+        <label>{{ field.html_name }}</label>
+        <help>{{ field.help_text }}</help>
+    </field>{% endfor %}
+    <field>
+        <label>token</label>
+        <help>{{ csrf_token }}</help>
+    </field>
+</form>

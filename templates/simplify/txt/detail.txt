@@ -1,0 +1,3 @@
+{% load i18n simplify %}{% block content %}{% for field in fields_detail %}{% if field in fields_relation %}{% getrelation object field as sub %}{% for s in sub.relations %}{{ field }} -->> {{ s }} [ {% for sfield in sub.fields %}{{ sfield }} => {% getattribute s sfield %}{% if not forloop.last %}, {% endif %}{% endfor %} ]
+{% endfor %}{% else %}{{ field }} -> {% getattribute object field %}
+{% endif %}{% endfor %}{% endblock %}
