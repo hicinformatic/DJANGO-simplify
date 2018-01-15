@@ -16,6 +16,7 @@ def purge(url, task):
     credentials = ('%s:%s' % (task.username, task.password))
     encoded_credentials = base64.b64encode(credentials.encode('ascii'))
     curl.add_header('Authorization', 'Basic %s' % encoded_credentials.decode("ascii"))
+    urllib.request.urlopen(curl)
     with urllib.request.urlopen(curl) as curl:
         curl = json.loads(curl.read().decode())
         if curl['number'] > 0:

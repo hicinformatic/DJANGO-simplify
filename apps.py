@@ -83,6 +83,7 @@ class Config(object):
         date_update     = _('Last modification date')
         update_by       = _('Update by')
         error           = _('Error encountered')
+        message         = _('Additional information')
         method          = _('Method')
         name_method     = _('Name')
         enable          = _('Enable')
@@ -133,6 +134,7 @@ class Config(object):
     class ht(object):
         update_by           = _('Last user who modified.')
         error               = _('Detail about the error.')
+        message             = _('add additional information')
         port                = _('Change the port used by the method')
         tls                 = _('Enable or disable TLS')
         certificate         = _('Uploaded here the certificate to check')
@@ -144,21 +146,30 @@ class Config(object):
         self_signed         = _('Is the certificate self-signed?')
         field               = _('Automatically filled field with key map (Keep null if not used)')
         can_update_method   = _('Can update task')
-        can_read_method     = _('Can read task')
+        can_read_method     = _('Can detail and list method')
         can_check_method    = _('Can check method')
         can_use_api         = _('Can use API')
+        can_read_user       = _('Can detail and list user')
+        can_see_email       = _('Can see email')
+        can_see_firstname   = _('Can see firstname')
+        can_see_lastname    = _('Can see lastname')
+        can_see_method      = _('Can see method')
+        can_see_groups      = _('Can see groups')
+        can_see_permissions = _('Can see permissions')
+        can_see_additional  = _('Can see additional')
+        can_see_key         = _('Can see key')
         name_script         = _('Script name')
         script              = _('Script filename without extension .py')
         code                = _('Python code')
         can_update_script   = _('Can update script')
-        can_read_script     = _('Can read script')
+        can_read_script     = _('Can detail and list script')
         default             = _('Default tasks')
         info                = _('Information about the task.')
         status              = _('Task status.')
         commmand            = _('Command used to run the script.')
         local_check         = _('Local check for not duplicate the task.')
         can_update_task     = _('Can update task')
-        can_read_task       = _('Can read task')
+        can_read_task       = _('Can detail and list task')
         ldap_host           = _('Hostname/IP')
         ldap_port           = _('Keep 389 to use default port')
         ldap_tls            = _('Use option TLS')
@@ -207,7 +218,7 @@ class Config(object):
         unique_username = True
         unique_email    = False
         null_username   = False
-        null_email      = False
+        null_email      = True
         null_firstname  = True
         null_lastname   = True
         is_active       = False
@@ -227,9 +238,9 @@ class Config(object):
         index_title              = _('Site administration (assisted by Authenta)')
         verbose_name             = _('Authentication and Authorization')
         login                    = _('Log in')
-        log_fieldsets            = (_('Log informations'), {'fields': ('update_by', 'date_create', 'date_update', 'error')})
+        log_fieldsets            = (_('Log informations'), {'fields': ('update_by', 'date_create', 'date_update', 'error', 'message')})
         method_fieldsets         = (((None, { 'fields': ('method', 'name', 'port', 'enable',), })),
-                                   ((_('TLS configuration'), { 'classes': ('collapse',), 'fields': ('tls', 'certificate', 'self_signed')})),
+                                   ((_('TLS configuration'), { 'classes': ('collapse',), 'fields': ('tls', 'certificate', 'self_signed', 'certificate_path', 'certificate_content')})),
                                    (_('Groups and permissions'), { 'classes': ('collapse',), 'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'permissions', )}))
         method_filter_horizontal = ('groups', 'permissions')
         method_list_display      = ('name', 'method', 'enable', 'is_active', 'is_staff', 'is_superuser', 'status','admin_button_check')
@@ -253,13 +264,13 @@ class Config(object):
         user_list_display        = None
         user_readonly_fields     = ('date_joined', 'date_update', 'update_by')
         script_fieldsets         = ((None, { 'fields': ('name', 'script', 'code')}),
-                                   (_('Log informations'), {'fields': ('update_by', 'date_create', 'date_update', 'error')}))
+                                   (log_fieldsets))
         script_list_display      = ('name', 'script')
         script_readonly_fields   = ('update_by', 'date_create', 'date_update', 'error')
         task_fieldsets           = ((None, { 'fields': ('script', 'default', 'status', 'info', 'error', 'command', 'local_check')}),
                                    (log_fieldsets))
         task_list_display        = ('__str__', 'status')
-        task_readonly_fields     = ('update_by', 'date_create', 'date_update', 'error', 'command', 'local_check')
+        task_readonly_fields     = ('update_by', 'date_create', 'date_update', 'error',  'command', 'info', 'local_check')
 
     class task(object):
         robot      = 'robot'
@@ -273,8 +284,10 @@ class Config(object):
         python_extension  = '.py'
         kill_timeout = 3600
         port         = 8000
-        command = '{background} {python} {directory}/{task}{extension} {id} {background_end}'
-        local_check = '{background} {binary} {directory}/{script}{script_extension} {port} {namespace} {timeout} {id} {robot} {password} {background_end}'
+        command      = '{background} {python} {directory}/{task}{extension} {id} {background_end}'
+        local_check  = '{background} {binary} {directory}/{script}{script_extension} {port} {namespace} {timeout} {id} {robot} {password} {background_end}'
+        purge_number = 100
+        purge_day    = 5
 
     class ldap(object):
         name   = _('LDAP')

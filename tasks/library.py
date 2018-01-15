@@ -9,17 +9,17 @@ sys.path.append(appdir)
 from apps import Config as  conf
 
 class Task:
-    username = conf.robot.username
-    password = conf.robot.password
+    username = conf.task.robot
+    password = conf.task.password
     url_update = 'http://localhost:{port}/{namespace}/'
-    namespace = conf.App.namespace
-    port = conf.Task.django_port
+    namespace = conf.namespace
+    port = conf.task.port
     directory = os.path.dirname(os.path.realpath(__file__))
 
     def __init__(self, taskid, scriptname):
         self.taskid = taskid
         self.scriptname = scriptname
-        self.url_update = self.getUrl('task/update/%s.json' % taskid)
+        self.url_update = self.getUrl('task/%s/update.json' % taskid)
         self.file_pid = '{directory}/{taskidid}.pid'.format(directory=self.directory, taskidid=taskid)
         self.writePidFile()
 
@@ -48,7 +48,6 @@ class Task:
         data['csrfmiddlewaretoken'] = init['token']
         data = urllib.parse.urlencode(data).encode()
         curl = urllib.request.Request(url, data=data)
-        curl.add_header('Authorization', 'Basic %s' % encoded_credentials.decode("ascii"))
         curl = base.open(curl)
         return curl.getcode()
 
@@ -56,10 +55,6 @@ class Task:
         return 'http://localhost:{port}/{namespace}/{url}'.format(namespace=self.namespace, port=self.port, url=url)
 
     def getConfig(self, clas, attribute, function=False):
+        if clas == 'self':
+            return getattr(conf, attribute)() if function else getattr(conf, attribute)
         return getattr(getattr(conf, clas), attribute)() if function else getattr(getattr(conf, clas), attribute)
-
-    #def encryptCache(self, filename, plaintext):
-    #    conf.encryptCache(filename, plaintext)
-
-    #def decryptCache(self, filename):
-    #    return conf.encryptCache(filename)

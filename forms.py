@@ -7,6 +7,16 @@ from .manager import UserManager as User
 
 import os, json
 
+
+class MethodAdminForm(forms.ModelForm):
+    certificate = forms.FileField(required=False)
+
+    def clean(self):
+        cleaned_data = super(MethodAdminForm, self).clean()
+        if conf.choices.method_method and hasattr(cleaned_data['certificate'], 'read'):
+            cleaned_data['certificate'] = cleaned_data['certificate'].read().decode('utf-8') 
+        return cleaned_data
+
 class AuthenticationLDAPForm(AuthenticationForm):
     user = None
     one_is_true = False
@@ -63,15 +73,4 @@ class AuthenticationLDAPForm(AuthenticationForm):
                     self.user.correspondence('first_name', ldap.correspondence(method['field_firstname']))
                     self.user.correspondence('last_name', ldap.correspondence(method['field_lastname']))
                     self.user.correspondence('email', ldap.correspondence(method['field_email']))
-        print('toto')
-        print(self.user.one_is_true)
         return self.user.one_is_true
-
-class MethodAdminForm(forms.ModelForm):
-    certificate = forms.FileField(required=False)
-
-    def clean(self):
-        cleaned_data = super(MethodAdminForm, self).clean()
-        if conf.ldap.activate and hasattr(cleaned_data['certificate'], 'read'):
-            cleaned_data['certificate'] = cleaned_data['certificate'].read()
-        return cleaned_data

@@ -4,6 +4,7 @@ from django.views.decorators.cache import never_cache
 from django.urls import (re_path, path)
 
 from .apps import SimplifyConfig as conf
+from .forms import MethodAdminForm
 from .models import (Group, Method, User, Script, Task)
 
 class SimplifyAdminSite(admin.AdminSite):
@@ -66,18 +67,14 @@ from django.contrib.auth.models import Permission
 class PermissionAdmin(admin.ModelAdmin):
     pass
 
-
 @admin.register(Group)
 class CustomGroup(GroupAdmin):
     pass
 
 if conf.choices.method_method:
-    from .views import MethodAdminCheck
-
-    conf_path = {'ns': conf.namespace, 'ext': conf.extension.regex}
-
     @admin.register(Method)
     class MethodAdmin(OverAdmin, admin.ModelAdmin):
+        form = MethodAdminForm
         fieldsets         = conf.admin.method_fieldsets 
         if conf.ldap.enable:
             fieldsets    += (conf.admin.ldap_fieldsets,)
@@ -89,6 +86,8 @@ if conf.choices.method_method:
         search_fields     = conf.admin.method_search_fields
 
         def get_urls(self):
+            from .views import MethodAdminCheck
+            conf_path = {'ns': conf.namespace, 'ext': conf.extension.regex}
             urlpatterns = super(MethodAdmin, self).get_urls()
             urlpatterns = [
                 re_path(r'(?P<pk>\d+)/check(\.|/)?(?P<extension>({ext}))?/?$'.format(**conf_path),
@@ -106,7 +105,7 @@ class CustomUserAdmin(OverAdmin, UserAdmin):
     readonly_fields   = conf.admin.user_readonly_fields
 
 @admin.register(Script)
-class TaskAdmin(OverAdmin, admin.ModelAdmin):
+class TaskScript(OverAdmin, admin.ModelAdmin):
     fieldsets       = conf.admin.script_fieldsets
     list_display    = conf.admin.script_list_display
     readonly_fields = conf.admin.script_readonly_fields

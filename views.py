@@ -1,11 +1,14 @@
 from django.contrib import messages
-from django.contrib.auth.decorators import permission_required , login_required
+from django.contrib.auth.decorators import (permission_required , login_required)
 from django.utils.decorators import method_decorator
+from django.utils import timezone
 
 from .apps import SimplifyConfig as conf
-from .hybrids import (HybridAdminView, HybridCreateView, HybridUpdateView, HybridDetailView, HybridListView)
-from .models import (Method, Script, Task)
+from .hybrids import (FakeModel, HybridAdminView, HybridCreateView, HybridUpdateView, HybridDetailView, HybridListView, HybridTemplateView)
+from .models import (Method, User, Script, Task)
 from .decorators import is_superuser_required
+
+from datetime import timedelta
 
 #███╗   ███╗███████╗████████╗██╗  ██╗ ██████╗ ██████╗ 
 #████╗ ████║██╔════╝╚══██╔══╝██║  ██║██╔═══██╗██╔══██╗
@@ -13,16 +16,15 @@ from .decorators import is_superuser_required
 #██║╚██╔╝██║██╔══╝     ██║   ██╔══██║██║   ██║██║  ██║
 #██║ ╚═╝ ██║███████╗   ██║   ██║  ██║╚██████╔╝██████╔╝
 #╚═╝     ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚═════╝
-@method_decorator(permission_required('script.can_check'), name='dispatch')
+@method_decorator(permission_required('simplify.can_check_method'), name='dispatch')
 class MethodCheck(HybridDetailView):
     model = Method
     fields_detail = ['id', 'method', 'name', 'port', 
-                     'tls', 'self_signed', 'certificate', 'certificate_path',
+                     'tls', 'self_signed', 'certificate_content', 'certificate_path',
                      'is_active', 'is_staff', 'is_superuser', 'groups', 'permissions', 
                      'field_firstname', 'field_lastname', 'field_email',
                      'error']
-    fields_groups      = ['id', 'name']
-    fields_permissions = ['id', '__str__']
+    fields_relation = {'groups': ['id', 'name'], 'permissions': ['id', 'codename']}
 
     def get_context_data(self, **kwargs):
         context = super(MethodCheck, self).get_context_data(**kwargs)
@@ -59,14 +61,55 @@ class MethodDetail(HybridDetailView):
 @method_decorator(permission_required('simplify.can_read_method'), name='dispatch')
 class MethodList(HybridListView):
     model = Method
+    pk    = 'name'
     fields_detail = [
             'id', 'method', 'name', 'port', 
-            'tls', 'self_signed', 'certificate', 'certificate_path',
+            'tls', 'self_signed', 'certificate_content', 'certificate_path',
             'is_active', 'is_staff', 'is_superuser', 'groups', 'permissions', 
             'field_firstname', 'field_lastname', 'field_email',
             'error'
         ]
     fields_relation = {'groups': ['id', 'name'], 'permissions': ['id', 'codename']}
+
+#██╗   ██╗███████╗███████╗██████╗ 
+#██║   ██║██╔════╝██╔════╝██╔══██╗
+#██║   ██║███████╗█████╗  ██████╔╝
+#██║   ██║╚════██║██╔══╝  ██╔══██╗
+#╚██████╔╝███████║███████╗██║  ██║
+# ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝
+@method_decorator(permission_required('simplify.can_read_user'), name='dispatch')
+class UserDetail(HybridDetailView):
+    model = User
+    fields_detail = ['id', 'username', 'date_joined']
+    fields_relation = {'groups': ['id', 'name'], 'user_permissions': ['id', 'codename']}
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.has_perm('simplify.can_see_email'):       self.fields_detail = self.fields_detail + ['email']
+        if request.user.has_perm('simplify.can_see_firstname'):   self.fields_detail = self.fields_detail + ['firstname']
+        if request.user.has_perm('simplify.can_see_lastname'):    self.fields_detail = self.fields_detail + ['lastname']
+        if request.user.has_perm('simplify.can_see_method'):      self.fields_detail = self.fields_detail + ['method']
+        if request.user.has_perm('simplify.can_see_groups'):      self.fields_detail = self.fields_detail + ['groups']
+        if request.user.has_perm('simplify.can_see_permissions'): self.fields_detail = self.fields_detail + ['user_permissions']
+        if request.user.has_perm('simplify.can_see_additional'):  self.fields_detail = self.fields_detail + ['additional']
+        if request.user.has_perm('simplify.can_see_key'):         self.fields_detail = self.fields_detail + ['key']
+        return super(UserDetail, self).dispatch(request)
+
+@method_decorator(permission_required('simplify.can_read_user'), name='dispatch')
+class UserList(HybridListView):
+    model = User
+    fields_detail = ['id', 'username', 'date_joined']
+    fields_relation = {'groups': ['id', 'name'], 'user_permissions': ['id', 'codename']}
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.has_perm('simplify.can_see_email'):       self.fields_detail = self.fields_detail + ['email']
+        if request.user.has_perm('simplify.can_see_firstname'):   self.fields_detail = self.fields_detail + ['firstname']
+        if request.user.has_perm('simplify.can_see_lastname'):    self.fields_detail = self.fields_detail + ['lastname']
+        if request.user.has_perm('simplify.can_see_groups'):      self.fields_detail = self.fields_detail + ['groups']
+        if request.user.has_perm('simplify.can_see_permissions'): self.fields_detail = self.fields_detail + ['user_permissions']
+        if request.user.has_perm('simplify.can_see_method'):      self.fields_detail = self.fields_detail + ['method']
+        if request.user.has_perm('simplify.can_see_additional'):  self.fields_detail = self.fields_detail + ['additional']
+        if request.user.has_perm('simplify.can_see_key'):         self.fields_detail = self.fields_detail + ['key']
+        return super(UserList, self).dispatch(request)
 
 #███████╗ ██████╗██████╗ ██╗██████╗ ████████╗
 #██╔════╝██╔════╝██╔══██╗██║██╔══██╗╚══██╔══╝
@@ -119,3 +162,19 @@ class TaskDetail(HybridDetailView):
 class TaskList(HybridListView):
     model = Task
     fields_detail = ['script', 'default', 'info', 'status', 'error']
+
+@method_decorator(permission_required('simplify.delete_task'), name='dispatch')
+class TaskPurge(HybridTemplateView):
+    fields_detail = ['number',]
+    object = FakeModel()
+
+    def get_context_data(self, **kwargs):
+        context = super(TaskPurge, self).get_context_data(**kwargs)
+        delta = timezone.now()-timedelta(days=conf.task.purge_day)
+        tasks = Task.objects.filter(date_update__lte=delta).order_by('-id')[:conf.task.purge_number]
+        self.object.number = tasks.count()
+        tasks = tasks.values_list('pk', flat=True)
+        if self.object.number > 0:
+            self.object.number = self.object.number-1
+            Task.objects.filter(pk__in=tasks).exclude(pk=list(tasks)[0]).delete()
+        return context

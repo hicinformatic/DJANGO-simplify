@@ -1,7 +1,7 @@
 {% load i18n simplify %}{% block content %}<section class="detail">
     <h1>titre</h1>{% for object in object_list %}
     <article>
-        <h2>{{ object.pk }}</h2>
+        <h2>{% if pk %}{% getattribute object pk %}{% else %}{{ object.pk }}{% endif %}</h2>
         <table>
             <tr>
                 <th>{% trans 'Field' %}</th>

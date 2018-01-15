@@ -2,7 +2,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
     
 from .apps import SimplifyConfig as conf
-from .models import Task
+from .models import (Method, Task)
 
 @receiver(post_save, sender=Task)
 def TaskStarting(sender, instance, created, **kwargs):

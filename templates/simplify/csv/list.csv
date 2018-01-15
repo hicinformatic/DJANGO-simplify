@@ -1,4 +1,4 @@
 {% load i18n simplify %}{% block content %}"{% trans 'Object' %}","{% trans 'Field' %}","{% trans 'Value' %}"
-{% for object in object_list %}{% for field in fields_detail %}{% if field in fields_relation %}{% getrelation object field as sub %}{% for s in sub.relations %}"{{ object.pk }}","{{ field }}","{% for sfield in sub.fields %}{{ sfield }}: {% getattribute s sfield %}{% if not forloop.last %} | {% endif %}{% endfor %}"
-{% endfor %}{% else %}"{{ object.pk }}","{{ field }}","{% getattribute object field %}"
+{% for object in object_list %}{% for field in fields_detail %}{% if field in fields_relation %}{% getrelation object field as sub %}{% for s in sub.relations %}"{{ object.pk }}","{{ field }}","{% for sfield in sub.fields %}{{ sfield }}: {% getattribute s sfield False %}{% if not forloop.last %} | {% endif %}{% endfor %}"
+{% endfor %}{% else %}"{{ object.pk }}","{{ field }}","{% getattribute object field False %}"
 {% endif %}{% endfor %}{% endfor %}{% endblock %}

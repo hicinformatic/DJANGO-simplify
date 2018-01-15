@@ -23,6 +23,7 @@ class Update(models.Model):
     date_update = models.DateTimeField(conf.vn.date_update, auto_now=True, editable=False)
     update_by   = models.CharField(conf.vn.update_by, blank=True, editable=False, help_text=conf.ht.update_by, max_length=254, null=True)
     error       = models.TextField(conf.vn.error, blank=True, help_text=conf.ht.error, null=True)
+    message     = models.TextField(conf.vn.message, blank=True, help_text=conf.ht.message, null=True)
 
     class Meta:
         abstract = True
@@ -95,7 +96,7 @@ class Method(Update):
         self.certificate_content()
 
     def certificate_path(self):
-        return '{}/{}_{}.crt'.format(conf.directory.certificates, self.name, self.method)
+        return None if self.certificate in [None, ''] else '{}/{}_{}.crt'.format(conf.directory.certificates, self.name, self.method)
     certificate_path.short_description = conf.ht.certificate_path
 
     def certificate_content(self):
@@ -154,7 +155,18 @@ class User(AbstractUser):
         verbose_name        = conf.vbn.user
         verbose_name_plural = conf.vpn.user
         ordering            = [conf.user.username_field]
-        permissions         = (('can_use_api', conf.ht.can_use_api),)
+        permissions         = (
+            ('can_use_api', conf.ht.can_use_api),
+            ('can_read_user', conf.ht.can_read_user),
+            ('can_see_email', conf.ht.can_see_email),
+            ('can_see_firstname', conf.ht.can_see_firstname),
+            ('can_see_lastname', conf.ht.can_see_lastname),
+            ('can_see_method', conf.ht.can_see_method),
+            ('can_see_groups', conf.ht.can_see_groups),
+            ('can_see_permissions', conf.ht.can_see_permissions),
+            ('can_see_additional', conf.ht.can_see_additional),
+            ('can_see_key', conf.ht.can_see_key),
+            )
 
     def clean(self):
         super(AbstractUser, self).clean()

@@ -71,10 +71,12 @@ class HybridUpdateView(Hybrid, UpdateView):
 #╚══════╝╚═╝╚══════╝   ╚═╝     ╚═══╝  ╚═╝╚══════╝ ╚══╝╚══╝
 class HybridListView(Hybrid, ListView):
     template_name = conf.template.listt
+    pk = None
 
     def get_context_data(self, **kwargs):
         context = super(HybridListView, self).get_context_data(**kwargs)
         context.update({ 'fields_detail': self.fields_detail })
+        context.update({'pk': self.pk})
         return context
 
 #██████╗ ███████╗████████╗ █████╗ ██╗██╗    ██╗   ██╗██╗███████╗██╗    ██╗
@@ -90,6 +92,15 @@ class HybridDetailView(Hybrid, DetailView):
         context = super(HybridDetailView, self).get_context_data(**kwargs)
         context.update({ 'fields_detail': self.fields_detail })
         return context
+
+#████████╗███████╗███╗   ███╗██████╗ ██╗      █████╗ ████████╗███████╗██╗   ██╗██╗███████╗██╗    ██╗
+#╚══██╔══╝██╔════╝████╗ ████║██╔══██╗██║     ██╔══██╗╚══██╔══╝██╔════╝██║   ██║██║██╔════╝██║    ██║
+#   ██║   █████╗  ██╔████╔██║██████╔╝██║     ███████║   ██║   █████╗  ██║   ██║██║█████╗  ██║ █╗ ██║
+#   ██║   ██╔══╝  ██║╚██╔╝██║██╔═══╝ ██║     ██╔══██║   ██║   ██╔══╝  ╚██╗ ██╔╝██║██╔══╝  ██║███╗██║
+#   ██║   ███████╗██║ ╚═╝ ██║██║     ███████╗██║  ██║   ██║   ███████╗ ╚████╔╝ ██║███████╗╚███╔███╔╝
+#   ╚═╝   ╚══════╝╚═╝     ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝  ╚═══╝  ╚═╝╚══════╝ ╚══╝╚══╝ 
+class HybridTemplateView(HybridDetailView, TemplateView):
+    pass
 
 # █████╗ ██████╗ ███╗   ███╗██╗███╗   ██╗
 #██╔══██╗██╔══██╗████╗ ████║██║████╗  ██║

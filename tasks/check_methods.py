@@ -9,8 +9,8 @@ task.update('start', 'Started')
 
 
 import urllib.request, urllib.parse, json
-methods = task.getUrl('methods.json')
-check = 'method/check/{}.json'
+methods = task.getUrl('method/list.json')
+check = 'method/{}/check.json'
 
 task.update('running', 'Get methods')
 
