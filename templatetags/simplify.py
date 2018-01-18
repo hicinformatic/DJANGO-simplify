@@ -41,9 +41,11 @@ def getattribute(obj, attribute, boolean_img=True):
 @register.simple_tag(name='getrelation', takes_context=True)
 def getrelation(context, obj, attribute):
     fields = context['fields_relation'][attribute]
-    if hasattr(obj, '%s_set' % attribute):
-        relations = getattr(obj, '%s_set' % attribute).all()
-    else:
-        relations = getattr(obj, attribute).all()
-    size = len(fields) * relations.count()
-    return {'fields': fields, 'relations': relations, 'size': size }
+    relations = getattr(obj, '%s_set' % attribute).all() if  hasattr(obj, '%s_set' % attribute) else getattr(obj, attribute).all()
+    return {'fields': fields, 'relations': relations }
+
+@register.simple_tag(name='getforeignkey', takes_context=True)
+def getforeignkey(context, obj, attribute):
+    fields = context['fields_foreignkey'][attribute]
+    relations = getattr(obj, attribute)
+    return {'fields': fields, 'relations': relations }

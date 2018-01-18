@@ -20,11 +20,35 @@
                         </tr>{% endfor %}
                     </table>{% endfor %}
                 </td>
+            </tr>{% elif field in fields_foreignkey %}{% getforeignkey object field as sub %}
+            <tr>
+                <td>{{ field }}</td>
+                <td>
+                    <table>{% for sfield in sub.fields %} 
+                        <tr>
+                            <td>{{ sfield }}</td>
+                            <td>{% getattribute sub.relations sfield %}</td>
+                        </tr>{% endfor %}
+                    </table>
+                </td>
             </tr>{% else %}
             <tr>
                 <td>{{ field }}</td>
                 <td>{% getattribute object field %}</td>
             </tr>{% endif %}{% endfor %}
         </table>
-    </article>{% endfor %}
+    </article>{% endfor %}{% if is_paginated %}
+    <article>
+        <h2>{% trans 'Pagination' %}</h2>
+        <table>
+            <tr>
+                <th>{% trans 'Current' %}</th>
+                <th>{% trans 'Number' %}</th>
+            </tr>
+            <tr>
+                <td>{{ page_obj.number }}</td>
+                <td>{{ page_obj.paginator.num_pages }}</td>
+            </tr>
+        </table>
+    </article>{% endif %}
 </section>{% endblock %}

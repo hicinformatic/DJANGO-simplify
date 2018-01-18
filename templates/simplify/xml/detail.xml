@@ -8,7 +8,10 @@
                     <value field="{{ sfield }}">{% getattribute s sfield %}</value>{% endfor %}
                 </object>{% endfor %}
             </relations>
-        </value>{% else %}
+        </value>{% elif field in fields_foreignkey %}{% getforeignkey object field as sub %}
+        <values>{% for sfield in sub.fields %} 
+            <value field="{{sfield}}">{% getattribute sub.relations sfield %}</value>{% endfor %}
+        </values>{% else %}
         <value>{% getattribute object field %}</value>{% endif %}
     </field>{% endfor %}
 </detail>

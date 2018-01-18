@@ -1,4 +1,6 @@
 {% load i18n simplify %}{% block content %}"{% trans 'Object' %}","{% trans 'Field' %}","{% trans 'Value' %}"
 {% for object in object_list %}{% for field in fields_detail %}{% if field in fields_relation %}{% getrelation object field as sub %}{% for s in sub.relations %}"{{ object.pk }}","{{ field }}","{% for sfield in sub.fields %}{{ sfield }}: {% getattribute s sfield False %}{% if not forloop.last %} | {% endif %}{% endfor %}"
+{% endfor %}{% elif field in fields_foreignkey %}{% getforeignkey object field as sub %}{% for sfield in sub.fields %}"{{ object.pk }}","{{ field }}:{{ sfield }}","{% getattribute sub.relations sfield %}"
 {% endfor %}{% else %}"{{ object.pk }}","{{ field }}","{% getattribute object field False %}"
-{% endif %}{% endfor %}{% endfor %}{% endblock %}
+{% endif %}{% endfor %}{% endfor %}{% endblock %}{% if is_paginated %}"pagination","page_current","{{ page_obj.number }}"
+"pagination","page_number","{{ page_obj.paginator.num_pages }}"{% endif %}

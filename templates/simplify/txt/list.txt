@@ -1,6 +1,8 @@
 {% load i18n simplify %}{% block content %}{% for object in object_list %}{% for field in fields_detail %}{% if field in fields_relation %}{% getrelation object field as sub %}{% for s in sub.relations %}{{ field }} -->> {{ s }} [ {% for sfield in sub.fields %}{{ sfield }} => {% getattribute s sfield %}{% if not forloop.last %}, {% endif %}{% endfor %} ]
-{% endfor %}{% else %}{{ field }} -> {% getattribute object field %}
-{% endif %}{% endfor %}
+{% endfor %}{% elif field in fields_foreignkey %}{% getforeignkey object field as sub %}{{ field }} -->> [ {% for sfield in sub.fields %}{{ sfield }} => {% getattribute sub.relations sfield False %}{% if not forloop.last %}, {% endif %}{% endfor %} ]
+{% else %}{{ field }} -> {% getattribute object field %}
+{% endif %}{% endfor %}{% if is_paginated %}page_current -> {{ page_obj.number }}
+page_number -> {{ page_obj.paginator.num_pages }}{% endif %}
 {% if not forloop.last %}=====================----------------------------=====================
 ====================]----------one-more----------[====================
 =====================----------------------------=====================

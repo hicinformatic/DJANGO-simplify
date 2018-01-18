@@ -3,6 +3,9 @@
         {{% for sfield in sub.fields %}
             "{{ sfield }}": "{% getattribute s sfield  False %}"{% if not forloop.last %},{% endif %}{% endfor %}
         }{% if not forloop.last %},{% endif %}{% endfor %}
-    ]{% else %}
+    ]{% elif field in fields_foreignkey %}{% getforeignkey object field as sub %}
+    "{{ field }}" : {
+    {% for sfield in sub.fields %}    "{{sfield}}": "{% getattribute sub.relations sfield False %}"{% if not forloop.last %},{% endif %}
+    {% endfor %}}{% else %}
     "{{ field }}": "{% getattribute object field False %}"{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}
 }

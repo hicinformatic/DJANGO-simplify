@@ -1,13 +1,15 @@
 {% load simplify %}[
 {% for object in object_list %}    
     {{% for field in fields_detail %} {% if field in fields_relation %}{% getrelation object field as sub %}
-        "{{ field }}" :
-        {
-        {% for s in sub.relations %}    "{{ s }}": 
-            {{% for sfield in sub.fields %}
+        "{{ field }}" : {
+        {% for s in sub.relations %}    "{{ s }}": {{% for sfield in sub.fields %}
                 "{{ sfield }}": "{% getattribute s sfield False %}"{% if not forloop.last %},{% endif %}{% endfor %}
-            }{% if not forloop.last %},{% endif %}{% endfor %}
-        }{% else %}
-        "{{ field }}": "{% getattribute object field False %}"{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}
-    }{% if not forloop.last %},{% endif %}
-{% endfor %}]
+            }{% if not forloop.last %},
+        {% endif %}{% endfor %}
+        }{% elif field in fields_foreignkey %}{% getforeignkey object field as sub %}
+        "{{ field }}" : {
+        {% for sfield in sub.fields %}    "{{sfield}}": "{% getattribute sub.relations sfield False %}"{% if not forloop.last %},{% endif %}
+        {% endfor %}}{% else %}
+        "{{ field }}": "{% getattribute object field False %}"{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}{% if is_paginated %},
+        "pagination": {"current": {{ page_obj.number }}, "number": {{ page_obj.paginator.num_pages }}}{% endif %}
+    }{% if not forloop.last %},{% endif %}{% endfor %}]

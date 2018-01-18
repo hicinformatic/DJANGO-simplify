@@ -27,7 +27,8 @@ class FakeModel(object):
 #╚═╝  ╚═╝   ╚═╝   ╚═════╝ ╚═╝  ╚═╝╚═╝╚═════╝
 class Hybrid(object):
     extension = 'html'
-    fields_relation = {}
+    fields_relation   = {}
+    fields_foreignkey = {}
 
     def dispatch(self, request, *args, **kwargs):
         self.extension = self.kwargs['extension'] if self.kwargs['extension'] is not None else 'html'
@@ -39,6 +40,7 @@ class Hybrid(object):
     def get_context_data(self, **kwargs):
         context = super(Hybrid, self).get_context_data(**kwargs)
         context.update({ 'fields_relation': self.fields_relation })
+        context.update({ 'fields_foreignkey': self.fields_foreignkey })
         return context
 
     def get_success_url(self):

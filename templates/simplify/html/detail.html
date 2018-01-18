@@ -20,6 +20,17 @@
                     </tr>{% endfor %}
                 </table>{% endfor %}
             </td>
+        </tr>{% elif field in fields_foreignkey %}{% getforeignkey object field as sub %}
+        <tr>
+            <td>{{ field }}</td>
+            <td>
+                <table>{% for sfield in sub.fields %} 
+                    <tr>
+                        <td>{{ sfield }}</td>
+                        <td>{% getattribute sub.relations sfield %}</td>
+                    </tr>{% endfor %}
+                </table>
+            </td>
         </tr>{% else %}
         <tr>
             <td>{{ field }}</td>
