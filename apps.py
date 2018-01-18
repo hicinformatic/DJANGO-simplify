@@ -59,7 +59,6 @@ class Config(object):
         no_certificate  = _('This method does not use a certificate')
         maintain        = _('This default script not exist')
 
-
     class message(object):
         method_works = _('The method works')
 
@@ -279,6 +278,7 @@ class Config(object):
         log_fieldsets            = (_('Log informations'), {'fields': ('update_by', 'date_create', 'date_update', 'error', 'message')})
         method_fieldsets         = (((None, { 'fields': ('method', 'name', 'port', 'enable',), })),
                                    ((_('TLS configuration'), { 'classes': ('collapse',), 'fields': ('tls', 'certificate', 'self_signed', 'certificate_path', 'certificate_content')})),
+                                   ((_('Correspondence'), { 'classes': ('collapse',), 'fields': ('field_firstname', 'field_lastname', 'field_email')})),
                                    (_('Groups and permissions'), { 'classes': ('collapse',), 'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'permissions', )}))
         method_filter_horizontal = ('groups', 'permissions')
         method_list_display      = ('name', 'method', 'enable', 'is_active', 'is_staff', 'is_superuser', 'status', 'admin_button_check', 'admin_download_certificate')

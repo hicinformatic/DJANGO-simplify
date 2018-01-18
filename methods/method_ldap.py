@@ -47,7 +47,6 @@ class method_ldap(Method):
     def get(self, username, password):
         searchdn = self.search.replace("{{username}}", username)
         self.cnx = self.ldap.initialize("{}://{}:{}".format(self.uri, self.host, self.port))
-        print("{}://{}:{}".format(self.uri, self.host, self.port))
         self.cnx.protocol_version = getattr(self.ldap, self.version)
         #if self.tls: cnx.start_tls_s()
         if self.bind:
@@ -65,6 +64,4 @@ class method_ldap(Method):
         return data
 
     def correspondence(self, field):
-        print(self.data)
-        print(field)
         return self.data[0][1][field][0].decode()
