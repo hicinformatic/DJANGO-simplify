@@ -4,7 +4,7 @@
         <name>{{ field }}</name>{% if field in fields_relation %}{% getrelation object field as sub %}
         <value>
             <relations>{% for s in sub.relations %}
-                <object str="{{ s }}">{% for sfield in sub.fields %}
+                <object>{% for sfield in sub.fields %}
                     <value field="{{ sfield }}">{% getattribute s sfield %}</value>{% endfor %}
                 </object>{% endfor %}
             </relations>

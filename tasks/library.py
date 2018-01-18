@@ -4,19 +4,19 @@ import base64
 appdir = os.path.abspath(os.path.join(__file__ ,"../.."))
 projectdir = os.path.abspath(os.path.join(__file__ ,"../../.."))
 sys.path.append(projectdir)
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "testdjango.settings")
-sys.path.append(appdir)
-from apps import Config as  conf
 
 class Task:
-    username = conf.task.robot
-    password = conf.task.password
-    url_update = 'http://localhost:{port}/{namespace}/'
-    namespace = conf.namespace
-    port = conf.task.port
-    directory = os.path.dirname(os.path.realpath(__file__))
-
-    def __init__(self, taskid, scriptname):
+    def __init__(self, taskid, scriptname, settings_dir):
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "%s.settings" % settings_dir)
+        sys.path.append(appdir)
+        from apps import Config as conf
+        self.conf = conf
+        self.username = self.conf.task.robot
+        self.password = self.conf.task.password
+        self.url_update = 'http://localhost:{port}/{namespace}/'
+        self.namespace = self.conf.namespace
+        self.port = self.conf.task.port
+        self.directory = os.path.dirname(os.path.realpath(__file__))
         self.taskid = taskid
         self.scriptname = scriptname
         self.url_update = self.getUrl('task/%s/update.json' % taskid)
@@ -56,5 +56,5 @@ class Task:
 
     def getConfig(self, clas, attribute, function=False):
         if clas == 'self':
-            return getattr(conf, attribute)() if function else getattr(conf, attribute)
-        return getattr(getattr(conf, clas), attribute)() if function else getattr(getattr(conf, clas), attribute)
+            return getattr(self.conf, attribute)() if function else getattr(self.conf, attribute)
+        return getattr(getattr(self.conf, clas), attribute)() if function else getattr(getattr(self.conf, clas), attribute)

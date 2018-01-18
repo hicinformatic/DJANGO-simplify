@@ -31,7 +31,7 @@ def getattribute_field(instance, field_name, attribute, boolean_img=True):
 @register.simple_tag(name='getattribute')
 def getattribute(obj, attribute, boolean_img=True):
     if hasattr(obj, str(attribute)):
-        return getattr(obj, attribute)
+        return getattr(obj, attribute)() if callable(getattr(obj, attribute)) else getattr(obj, attribute)
     elif hasattr(obj, 'has_key') and obj.has_key(attribute):
         return obj[attribute]
     elif numeric_test.match(str(attribute)) and len(obj) > int(attribute):
@@ -41,6 +41,9 @@ def getattribute(obj, attribute, boolean_img=True):
 @register.simple_tag(name='getrelation', takes_context=True)
 def getrelation(context, obj, attribute):
     fields = context['fields_relation'][attribute]
-    relations = getattr(obj, attribute).all()
+    if hasattr(obj, '%s_set' % attribute):
+        relations = getattr(obj, '%s_set' % attribute).all()
+    else:
+        relations = getattr(obj, attribute).all()
     size = len(fields) * relations.count()
     return {'fields': fields, 'relations': relations, 'size': size }

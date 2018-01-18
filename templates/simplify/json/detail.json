@@ -1,10 +1,8 @@
 {% load simplify %}{{% for field in fields_detail %} {% if field in fields_relation %}{% getrelation object field as sub %}
-    "{{ field }}" :
-    {
-    {% for s in sub.relations %}    "{{ s }}": 
+    "{{ field }}" : [{% for s in sub.relations %} 
         {{% for sfield in sub.fields %}
             "{{ sfield }}": "{% getattribute s sfield  False %}"{% if not forloop.last %},{% endif %}{% endfor %}
         }{% if not forloop.last %},{% endif %}{% endfor %}
-    }{% else %}
+    ]{% else %}
     "{{ field }}": "{% getattribute object field False %}"{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}
 }

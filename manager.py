@@ -2,11 +2,9 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth import get_user_model
 
 from .apps import SimplifyConfig as conf
-logger = conf.logger
 
 class UserManager(BaseUserManager):
     use_in_migrations = True
-
     one_is_true  = False
     methods      = []
     groups       = []
@@ -82,22 +80,24 @@ class UserManager(BaseUserManager):
             self.extra_fields[field] = value
 
     def manage_additional(self, request, username_field, username, password):
-        self.extra_fields['method'] = conf.user.method_additional
+        self.extra_fields['method'] = conf.choices.user_additional
         from django.contrib.auth import authenticate
-        user = get_user_model().objects.get(**{username_field: username})
-        return self.create_user_by_method_additional(username, password) if user is None else self.update_user_by_method_additional(user)
+        try:
+            user = get_user_model().objects.get(**{username_field: username})
+            return self.update_user_by_method_additional(user)
+        except get_user_model().DoesNotExist:
+            return self.create_user_by_method_additional(username, password)
 
     def create_user_by_method_additional(self, username, password):
-        logger('notice', 'create_user: %s' % username)
         return get_user_model().objects.create_user(username=username, password=password, **self.extra_fields)
 
     def update_user_by_method_additional(self, user):
         for field,value in self.extra_fields.items():
-            if field == conf.user.field_email: user.email = self.normalize_email(value)
-            elif field == conf.user.field_username: user.username = self.model.normalize_username(value)
+            if field == 'email': user.email = self.normalize_email(value)
+            elif field == 'username': user.username = self.model.normalize_username(value)
             else: setattr(user, field, value)
-        user.additional = [*self.methods]
-        user.groups = [*self.groups]
-        user.user_permissions = [*self.permissions]
+        user.additional.set([*self.methods])
+        user.groups.set([*self.groups])
+        user.user_permissions.set([*self.permissions])
         user.save()
         return user

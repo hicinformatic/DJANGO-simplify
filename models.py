@@ -83,7 +83,8 @@ class Method(Update):
         verbose_name_plural = conf.vpn.method
         permissions         = (
             ('can_read_method',   conf.ht.can_read_method),
-            ('can_check_method',  conf.ht.can_check_method))
+            ('can_check_method',  conf.ht.can_check_method),
+            ('can_writecert_method',  conf.ht.can_writecert_method))
 
     def __str__(self):
         return self.name
@@ -123,6 +124,13 @@ class Method(Update):
         return format_html('<a class="button" href="{url}">{vn}</a>'.format(url=url, vn=conf.vn.check))
     admin_button_check.short_description = conf.vn.check
 
+    def admin_download_certificate(self):
+        if self.certificate not in ['', None]:
+            url = reverse('simplify:method-get-certificate',  args=[self.id])
+            return format_html('<a class="button" href="{url}">{vn}</a>'.format(url=url, vn=conf.vn.certificate))
+        return None
+    admin_download_certificate.short_description = conf.vn.certificate
+
     def get_method(self):
         return getattr(getattr(methods, 'method_%s' % self.method.lower()), 'method_%s' % self.method.lower())(self)
 
@@ -145,7 +153,7 @@ class User(AbstractUser):
     update_by   = models.CharField(conf.vn.update_by, editable=False, max_length=254)
     method      = models.CharField(conf.vn.method, choices=conf.choices.user_method, default=conf.choices.user_backend, max_length=15)
     additional  = models.ManyToManyField(Method, blank=True)
-    key         = models.CharField(conf.vn.key, default=conf.user.key(conf.user.key_max_length), max_length=32, unique=True, validators=[MaxLengthValidator(conf.user.key_max_length), MinLengthValidator(conf.user.key_min_length),])
+    key         = models.CharField(conf.vn.key, default=conf.key, max_length=32, unique=True, validators=[MaxLengthValidator(conf.user.key_max_length), MinLengthValidator(conf.user.key_min_length),])
 
     objects = UserManager()
     USERNAME_FIELD = conf.user.username_field
@@ -166,7 +174,7 @@ class User(AbstractUser):
             ('can_see_permissions', conf.ht.can_see_permissions),
             ('can_see_additional', conf.ht.can_see_additional),
             ('can_see_key', conf.ht.can_see_key),
-            )
+        )
 
     def clean(self):
         super(AbstractUser, self).clean()
@@ -188,13 +196,27 @@ class Script(Update):
     class Meta:
         verbose_name        = conf.vbn.script
         verbose_name_plural = conf.vpn.script
-        permissions         = (('can_read_script', conf.ht.can_read_script),)
+        permissions         = (('can_read_script', conf.ht.can_read_script),('can_write_script', conf.ht.can_write_script))
 
     def __str__(self):
         return self.name
 
     def get_absolute_url(self):
         return reverse('%s:script-detail' % conf.namespace, kwargs={ 'pk': self.id, 'extension': '.html' })
+
+    def script_path(self):
+        return '{}/{}.py'.format(conf.directory.tasks, self.script)
+    script_path.short_description = conf.ht.script_path
+
+    def script_write(self, script):
+        with open(script, 'w') as script_file:
+            script_file.write(self.code)
+        script_file.closed
+
+    def admin_download_script(self):
+        url = reverse('simplify:script-get',  args=[self.id])
+        return format_html('<a class="button" href="{url}">{vn}</a>'.format(url=url, vn=conf.vn.script))
+    admin_download_script.short_description = conf.vn.script
 
 #████████╗ █████╗ ███████╗██╗  ██╗
 #╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
@@ -204,7 +226,7 @@ class Script(Update):
 #   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
 class Task(Update):
     script      = models.ForeignKey(Script, blank=True, on_delete=models.CASCADE, null=True)
-    default     = models.CharField(conf.vn.status, choices=conf.choices.task, blank=True, help_text=conf.ht.default, max_length=13, null=True)
+    default     = models.CharField(conf.vn.status, choices=conf.choices.task, blank=True, help_text=conf.ht.default, max_length=18, null=True)
     info        = models.TextField(conf.vn.info, blank=True, null=True, help_text=conf.ht.info)
     status      = models.CharField(conf.vn.status, choices=conf.choices.status_status, default=conf.choices.status_order, max_length=8, help_text=conf.ht.status)
     command     = models.CharField(conf.vn.commmand, blank=True, editable=False, help_text=conf.ht.commmand,  max_length=254, null=True)
@@ -233,6 +255,7 @@ class Task(Update):
         prepare['directory']      = conf.directory.tasks
         prepare['extension']      = conf.task.python_extension
         prepare['background_end'] = conf.task.background_end
+        prepare['settings_dir']   = conf.directory.settings
         self.command = conf.task.command.format(**prepare)
         prepare['binary']           = conf.task.binary
         prepare['script']           = conf.task.can_run
@@ -244,7 +267,9 @@ class Task(Update):
         self.save()
 
     def can_run(self):
-        if self.status != conf.choices.status_order:
+        if self.status == conf.choices.status_error:
+            return False
+        elif self.status != conf.choices.status_order:
             self.error = conf.error.not_order
             self.save()
             return False
@@ -256,7 +281,9 @@ class Task(Update):
         return False
 
     def start_task(self):
-        if self.status != conf.choices.status_ready:
+        if self.status == conf.choices.status_error:
+            return False
+        elif self.status != conf.choices.status_ready:
             self.error = conf.error.not_ready
             self.save()
             return False

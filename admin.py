@@ -4,7 +4,7 @@ from django.views.decorators.cache import never_cache
 from django.urls import (re_path, path)
 
 from .apps import SimplifyConfig as conf
-from .forms import MethodAdminForm
+from .forms import (ScriptAdminForm, MethodAdminForm)
 from .models import (Group, Method, User, Script, Task)
 
 class SimplifyAdminSite(admin.AdminSite):
@@ -30,6 +30,7 @@ class SimplifyAdminSite(admin.AdminSite):
             app_path=request.get_full_path(),
             username=request.user.get_username(),
             current_url=current_url,
+            next_url=request.GET.get('next', '')
         )
         if (REDIRECT_FIELD_NAME not in request.GET and REDIRECT_FIELD_NAME not in request.POST):
             context[REDIRECT_FIELD_NAME] = reverse('admin:index', current_app=self.name)
@@ -62,10 +63,10 @@ class OverAdmin(object):
         obj.update_by = getattr(request.user, conf.user.username_field)
         super(OverAdmin, self).save_model(request, obj, form, change)
 
-from django.contrib.auth.models import Permission
-@admin.register(Permission)
-class PermissionAdmin(admin.ModelAdmin):
-    pass
+#from django.contrib.auth.models import Permission
+#@admin.register(Permission)
+#class PermissionAdmin(admin.ModelAdmin):
+#    pass
 
 @admin.register(Group)
 class CustomGroup(GroupAdmin):
@@ -75,7 +76,7 @@ if conf.choices.method_method:
     @admin.register(Method)
     class MethodAdmin(OverAdmin, admin.ModelAdmin):
         form = MethodAdminForm
-        fieldsets         = conf.admin.method_fieldsets 
+        fieldsets = conf.admin.method_fieldsets 
         if conf.ldap.enable:
             fieldsets    += (conf.admin.ldap_fieldsets,)
         fieldsets        += (conf.admin.log_fieldsets,)
@@ -105,7 +106,8 @@ class CustomUserAdmin(OverAdmin, UserAdmin):
     readonly_fields   = conf.admin.user_readonly_fields
 
 @admin.register(Script)
-class TaskScript(OverAdmin, admin.ModelAdmin):
+class ScriptAdmin(OverAdmin, admin.ModelAdmin):
+    form            = ScriptAdminForm
     fieldsets       = conf.admin.script_fieldsets
     list_display    = conf.admin.script_list_display
     readonly_fields = conf.admin.script_readonly_fields

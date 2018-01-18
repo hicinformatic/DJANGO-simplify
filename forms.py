@@ -7,6 +7,14 @@ from .manager import UserManager as User
 
 import os, json
 
+class ScriptAdminForm(forms.ModelForm):
+    code = forms.FileField(required=False)
+
+    def clean(self):
+        cleaned_data = super(ScriptAdminForm, self).clean()
+        if conf.choices.method_method and hasattr(cleaned_data['code'], 'read'):
+            cleaned_data['code'] = cleaned_data['code'].read().decode('utf-8') 
+        return cleaned_data
 
 class MethodAdminForm(forms.ModelForm):
     certificate = forms.FileField(required=False)
@@ -39,7 +47,6 @@ class AuthenticationLDAPForm(AuthenticationForm):
                     return super(AuthenticationLDAPForm, self).clean()
         return self.cleaned_data
 
-
     def cycle(self, username, password):
         from .hybrids import FakeModel
         cache = '{}/{}.json'.format(conf.directory.cache, conf.ldap.name)
@@ -55,22 +62,19 @@ class AuthenticationLDAPForm(AuthenticationForm):
                 except method_ldap.UserNotFound:
                     error = '{} - {}'.format(method['name'], conf.error.user_notfound)
                     self.add_error(None, error)
-                    logger('notice', error)
                 except ldap_orig.INVALID_CREDENTIALS:
                     error = '{} - {}'.format(method['name'], conf.error.credentials)
                     self.add_error(None, error)
-                    logger('notice', error)
                 except Exception as error:
                     self.add_error(None, error)
-                    logger('notice', error)
                 else:
                     self.user.add_method(method['id'])
-                    self.user.is_active(method['is_active'])
-                    self.user.is_staff(method['is_staff'])
-                    self.user.is_superuser(method['is_superuser'])
+                    if method['is_active'] == 'True':   self.user.is_active(True)
+                    if method['is_staff'] == 'True':     self.user.is_staff(True)
+                    if method['is_superuser'] == 'True': self.user.is_superuser(True)
                     self.user.add_groups(method['groups'])
                     self.user.add_permissions(method['permissions'])
-                    self.user.correspondence('first_name', ldap.correspondence(method['field_firstname']))
-                    self.user.correspondence('last_name', ldap.correspondence(method['field_lastname']))
-                    self.user.correspondence('email', ldap.correspondence(method['field_email']))
+                    if method['field_firstname'] != 'None': self.user.correspondence('first_name', ldap.correspondence(method['field_firstname']))
+                    if method['field_lastname'] != 'None':  self.user.correspondence('last_name', ldap.correspondence(method['field_lastname']))
+                    if method['field_email'] != 'None':     self.user.correspondence('email', ldap.correspondence(method['field_email']))
         return self.user.one_is_true

@@ -6,7 +6,7 @@
 .method { display: block; padding: 5px 0; text-align: center; }
 a.blue { background: #79aec8; color: #fff; }
 a.blue:hover { background: #417690;  }
-p.authenta { font-size: 8px; text-align: right; }
+p.simplify { font-size: 8px; text-align: right; }
 </style>
 {{ form.media }}
 {% endblock %}
@@ -48,11 +48,11 @@ p.authenta { font-size: 8px; text-align: right; }
 {% endif %}
 
 {% if ldap and current_url == 'login' %}
-<a class="method blue" href="{% url 'admin:ldap_login' %}">LDAP</a>
+<a class="method blue" href="{% url 'admin:ldap_login' %}?next={{next_url}}">LDAP</a>
 <h2>{% trans 'Connexion Standard' %}</h2>
 <hr>
 {% elif ldap and current_url == 'ldap_login' %}
-<a class="method blue" href="{% url 'admin:login' %}">Standard</a>
+<a class="method blue" href="{% url 'admin:login' %}?next={{next_url}}">Standard</a>
 <h2>{% trans 'Connexion LDAP' %}</h2>
 <hr>
 {% endif %}
@@ -78,7 +78,7 @@ p.authenta { font-size: 8px; text-align: right; }
   </div>
 </form>
 
-<p class="authenta">{% trans '*Assisted by Simplify' %}</p>
+<p class="simplify">{% trans '*Assisted by Simplify' %}</p>
 
 </div>
 {% endblock %}

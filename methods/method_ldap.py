@@ -10,7 +10,7 @@ class method_ldap(Method):
         self.port           = method.port
         self.tls            = method.tls
         self.host           = method.ldap_host
-        self.cert           = method.certificate
+        #self.cert           = method.certificate
         self.certpath       = method.certificate_path
         self.define         = method.ldap_define
         self.scope          = method.ldap_scope
@@ -22,11 +22,12 @@ class method_ldap(Method):
         self.tls_cacertfile = method.ldap_tls_cacert
         self.self_signed    = method.self_signed
         self.uri            = self.start
+        self.ldap           = ldap
 
-        if self.tls:
+        if self.tls == 'True':
             self.uri = self.starts
-            self.ldap.set_option(self.ldap.OPT_X_TLS_DEMAND, True)
-            if self.cert:
+            ldap.set_option(self.ldap.OPT_X_TLS_DEMAND, True)
+            if self.certpath:
                 if self.self_signed: self.ldap.set_option(self.ldap.OPT_X_TLS_REQUIRE_CERT, self.ldap.OPT_X_TLS_ALLOW) 
                 else: self.ldap.set_option(self.ldap.OPT_X_TLS_REQUIRE_CERT, True)
             if self.tls_cacertfile:
@@ -46,6 +47,7 @@ class method_ldap(Method):
     def get(self, username, password):
         searchdn = self.search.replace("{{username}}", username)
         self.cnx = self.ldap.initialize("{}://{}:{}".format(self.uri, self.host, self.port))
+        print("{}://{}:{}".format(self.uri, self.host, self.port))
         self.cnx.protocol_version = getattr(self.ldap, self.version)
         #if self.tls: cnx.start_tls_s()
         if self.bind:
@@ -63,4 +65,6 @@ class method_ldap(Method):
         return data
 
     def correspondence(self, field):
-         return self.data[0][1][field][0].decode()
+        print(self.data)
+        print(field)
+        return self.data[0][1][field][0].decode()

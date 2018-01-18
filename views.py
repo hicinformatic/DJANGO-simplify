@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import (permission_required , login_required)
 from django.utils.decorators import method_decorator
 from django.utils import timezone
+from django.http import HttpResponse
 
 from .apps import SimplifyConfig as conf
 from .hybrids import (FakeModel, HybridAdminView, HybridCreateView, HybridUpdateView, HybridDetailView, HybridListView, HybridTemplateView)
@@ -20,10 +21,10 @@ from datetime import timedelta
 class MethodCheck(HybridDetailView):
     model = Method
     fields_detail = ['id', 'method', 'name', 'port', 
-                     'tls', 'self_signed', 'certificate_content', 'certificate_path',
+                     'tls', 'self_signed', 'certificate_path',
                      'is_active', 'is_staff', 'is_superuser', 'groups', 'permissions', 
                      'field_firstname', 'field_lastname', 'field_email',
-                     'error']
+                     'error','status']
     fields_relation = {'groups': ['id', 'name'], 'permissions': ['id', 'codename']}
 
     def get_context_data(self, **kwargs):
@@ -55,8 +56,18 @@ class MethodAdminCheck(HybridAdminView, MethodCheck):
 @method_decorator(permission_required('simplify.can_read_method'), name='dispatch')
 class MethodDetail(HybridDetailView):
     model = Method
-    fields_detail = ['method', 'name', 'groups', 'permissions']
+    fields_detail = [
+            'id', 'method', 'name', 'port', 
+            'tls', 'self_signed', 'certificate_path',
+            'is_active', 'is_staff', 'is_superuser', 'groups', 'permissions', 
+            'field_firstname', 'field_lastname', 'field_email',
+            'error','status']
     fields_relation = {'groups': ['id', 'name'], 'permissions': ['id', 'codename']}
+
+    def get_context_data(self, **kwargs):
+        if conf.ldap.enable and self.object.method == conf.ldap.option:
+            self.fields_detail = self.fields_detail+['ldap_host','ldap_define','ldap_scope','ldap_version','ldap_bind','ldap_password','ldap_user','ldap_search','ldap_tls_cacert']
+        return super(MethodDetail, self).get_context_data(**kwargs)
 
 @method_decorator(permission_required('simplify.can_read_method'), name='dispatch')
 class MethodList(HybridListView):
@@ -64,12 +75,44 @@ class MethodList(HybridListView):
     pk    = 'name'
     fields_detail = [
             'id', 'method', 'name', 'port', 
-            'tls', 'self_signed', 'certificate_content', 'certificate_path',
+            'tls', 'self_signed', 'certificate_path',
             'is_active', 'is_staff', 'is_superuser', 'groups', 'permissions', 
             'field_firstname', 'field_lastname', 'field_email',
-            'error'
-        ]
+            'error', 'status']
     fields_relation = {'groups': ['id', 'name'], 'permissions': ['id', 'codename']}
+
+@method_decorator(permission_required('simplify.can_read_method'), name='dispatch')
+class MethodGetCertificate(HybridDetailView):
+    model = Method
+    fields_detail = ['id', 'method', 'name', 'tls']
+
+    def get_context_data(self, **kwargs):
+        if self.object.certificate in ['', None] or self.object.tls is not True:
+            self.fields_detail = self.fields_detail+['error']
+            self.object.error = conf.error.tls_disable if self.object.tls is not True else conf.error.no_certificate 
+        return super(MethodGetCertificate, self).get_context_data(**kwargs)
+
+    def render_to_response(self, context):
+        if self.object.certificate not in ['', None] and self.object.tls is True:
+            response = HttpResponse()
+            response['Content-Disposition'] = 'attachment; filename="%s.crt"' % self.object.name
+            response.write(self.object.certificate)
+            return response
+        return super(MethodGetCertificate, self).render_to_response(context)
+
+@method_decorator(permission_required('simplify.can_writecert_method'), name='dispatch')
+class MethodWriteCertificate(HybridDetailView):
+    model = Method
+    fields_detail = ['id', 'method', 'name', 'tls']
+
+    def get_context_data(self, **kwargs):
+        if self.object.certificate not in ['', None] and self.object.tls is True:
+            self.object.certificate_write(self.object.certificate_path())
+        else:
+            self.fields_detail = self.fields_detail+['error']
+            self.object.error = conf.error.tls_disable if self.object.tls is not True else conf.error.no_certificate 
+        return super(MethodWriteCertificate, self).get_context_data(**kwargs)
+
 
 #██╗   ██╗███████╗███████╗██████╗ 
 #██║   ██║██╔════╝██╔════╝██╔══██╗
@@ -120,22 +163,42 @@ class UserList(HybridListView):
 @method_decorator(permission_required('simplify.add_script'), name='dispatch')
 class ScriptCreate(HybridCreateView):
     model = Script
-    fields = ['name']
+    fields = ['name', 'script', 'code']
 
 @method_decorator(permission_required('simplify.change_script'), name='dispatch')
 class ScriptUpdate(HybridUpdateView):
     model = Script
-    fields = ['name']
+    fields = ['name', 'script', 'code']
 
 @method_decorator(permission_required('simplify.can_read_script'), name='dispatch')
 class ScriptDetail(HybridDetailView):
     model = Script
-    fields_detail = ['name']
+    fields_detail = ['id', 'name', 'script']
 
 @method_decorator(permission_required('simplify.can_read_script'), name='dispatch')
 class ScriptList(HybridListView):
     model = Script
-    fields_detail = ['id', 'name']
+    fields_detail = ['id', 'name', 'script']
+
+@method_decorator(permission_required('simplify.can_read_script'), name='dispatch')
+class ScriptGet(HybridDetailView):
+    model = Script
+    fields_detail = ['id', 'name', 'script']
+
+    def render_to_response(self, context):
+        response = HttpResponse(content_type='application/x-python')
+        response['Content-Disposition'] = 'attachment; filename="%s.py"' % self.object.script
+        response.write(self.object.code)
+        return response
+
+@method_decorator(permission_required('simplify.can_write_script'), name='dispatch')
+class ScriptWrite(HybridDetailView):
+    model = Script
+    fields_detail = ['id', 'name', 'script']
+
+    def get_context_data(self, **kwargs):
+        self.object.script_write(self.object.script_path())
+        return super(ScriptWrite, self).get_context_data(**kwargs)
 
 #████████╗ █████╗ ███████╗██╗  ██╗
 #╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
@@ -178,3 +241,24 @@ class TaskPurge(HybridTemplateView):
             self.object.number = self.object.number-1
             Task.objects.filter(pk__in=tasks).exclude(pk=list(tasks)[0]).delete()
         return context
+
+@method_decorator(permission_required('simplify.can_add_task'), name='dispatch')
+class TaskMaintain(HybridTemplateView):
+    fields_detail = ['title', 'tasks']
+    pk     = 'title'
+    object = FakeModel()
+
+    def get_context_data(self, **kwargs):
+        self.object.title = 'Maintain'
+        tasks = {}
+        for task in conf.task.maintain:
+            newtask = Task(default=task)
+            if task not in dict(conf.choices.task):
+                tasks[task] = 'Error'
+                newtask.status=conf.choices.status_error
+                newtask.error=conf.error.maintain
+            else:
+                tasks[task] = 'Ordered'
+            newtask.save()
+        self.object.tasks = tasks
+        return super(TaskMaintain, self).get_context_data(**kwargs)
