@@ -31,11 +31,11 @@ def getattribute_field(instance, field_name, attribute, boolean_img=True):
 @register.simple_tag(name='getattribute')
 def getattribute(obj, attribute, boolean_img=True):
     if hasattr(obj, str(attribute)):
-        return getattr(obj, attribute)() if callable(getattr(obj, attribute)) else getattr(obj, attribute)
+        return str(getattr(obj, attribute)()) if callable(getattr(obj, attribute)) else str(getattr(obj, attribute))
     elif hasattr(obj, 'has_key') and obj.has_key(attribute):
-        return obj[attribute]
+        return str(obj[attribute])
     elif numeric_test.match(str(attribute)) and len(obj) > int(attribute):
-        return obj[int(attribute)]
+        return str(obj[int(attribute)])
     return boolean_icon(None) if boolean_img else None
 
 @register.simple_tag(name='getrelation', takes_context=True)

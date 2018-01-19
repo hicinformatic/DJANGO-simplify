@@ -87,13 +87,16 @@ if conf.choices.method_method:
         search_fields     = conf.admin.method_search_fields
 
         def get_urls(self):
-            from .views import MethodAdminCheck
+            from .views import (MethodAdminCheck, TaskAdminMaintain)
             conf_path = {'ns': conf.namespace, 'ext': conf.extension.regex}
             urlpatterns = super(MethodAdmin, self).get_urls()
             urlpatterns = [
                 re_path(r'(?P<pk>\d+)/check(\.|/)?(?P<extension>({ext}))?/?$'.format(**conf_path),
                     self.admin_site.admin_view(MethodAdminCheck.as_view()),
                     name='admin-method-check'),
+                re_path(r'(?P<pk>\d+)/maintain(\.|/)?(?P<extension>({ext}))?/?$'.format(**conf_path),
+                    self.admin_site.admin_view(TaskAdminMaintain.as_view()),
+                    name='admin-task-maintain'),
             ]+urlpatterns
             return urlpatterns
 
@@ -114,6 +117,7 @@ class ScriptAdmin(OverAdmin, admin.ModelAdmin):
 
 @admin.register(Task)
 class TaskAdmin(OverAdmin, admin.ModelAdmin):
+    change_list_template = 'simplify/html/admin_task_changelist.html'
     fieldsets       = conf.admin.task_fieldsets
     list_display    = conf.admin.task_list_display
     readonly_fields = conf.admin.task_readonly_fields

@@ -1,0 +1,18 @@
+{% extends "admin/change_list.html" %}
+{% load i18n static %}
+
+{% block messages %}
+<ul class="messagelist">
+    <li class="info" style="background: #c8cadc">
+        <p>
+            <b>Maintenance command line:</b>
+            <br>&nbsp;&nbsp;&nbsp;&nbsp;curl -s http://{robot}:{key}@{host}:{port}/{namespace}/task/maintain.{extension}
+        </p>
+        <p>
+            <i>Example:</i>
+            <br>&nbsp;&nbsp;&nbsp;&nbsp;curl -s http://robot:C9d.44A.83+Df78514c821d+D_2e7cD-@localhost:8000/simplify/task/maintain.json
+        </p>
+    </li>
+</ul>
+{{ block.super }}
+{% endblock messages %}

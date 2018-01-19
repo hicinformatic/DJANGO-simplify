@@ -70,6 +70,7 @@ class Method(Update):
     if conf.ldap.enable:
         ldap_host       = models.CharField(conf.vn.ldap_host, blank=True, default='localhost', help_text=conf.ht.ldap_host, max_length=254, null=True)
         ldap_define     = models.CharField(conf.vn.ldap_define, blank=True, help_text=conf.ht.ldap_define, max_length=254, null=True)
+        ldap_uri        = models.CharField(conf.vn.ldap_uri, choices=conf.choices.ldap_uri, default=conf.choices.ldap_uri_ldap, help_text=conf.ht.ldap_uri, max_length=8)
         ldap_scope      = models.CharField(conf.vn.ldap_scope, choices=conf.choices.ldap_scope, default=conf.choices.ldap_scope_base, help_text=conf.ht.ldap_scope, max_length=14)
         ldap_version    = models.CharField(conf.vn.ldap_version, choices=conf.choices.ldap_version, default=conf.choices.ldap_version3, help_text=conf.ht.ldap_version, max_length=8)
         ldap_bind       = models.CharField(conf.vn.ldap_bind, blank=True, help_text=conf.ht.ldap_bind, max_length=254, null=True)

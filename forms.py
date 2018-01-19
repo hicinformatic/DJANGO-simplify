@@ -6,6 +6,7 @@ from .apps import SimplifyConfig as conf
 from .manager import UserManager as User
 
 import os, json
+logger = conf.logger
 
 class ScriptAdminForm(forms.ModelForm):
     code = forms.FileField(required=False)
@@ -61,11 +62,14 @@ class AuthenticationLDAPForm(AuthenticationForm):
                     data = ldap.get(username, password)
                 except method_ldap.UserNotFound:
                     error = '{} - {}'.format(method['name'], conf.error.user_notfound)
+                    logger('info', 'LDAP | error: %s'% error)
                     self.add_error(None, error)
                 except ldap_orig.INVALID_CREDENTIALS:
                     error = '{} - {}'.format(method['name'], conf.error.credentials)
+                    logger('info', 'LDAP | error: %s'% error)
                     self.add_error(None, error)
                 except Exception as error:
+                    logger('info', 'LDAP | error: %s'% error)
                     self.add_error(None, error)
                 else:
                     self.user.add_method(method['id'])
@@ -77,4 +81,6 @@ class AuthenticationLDAPForm(AuthenticationForm):
                     if method['field_firstname'] != 'None': self.user.correspondence('first_name', ldap.correspondence(method['field_firstname']))
                     if method['field_lastname'] != 'None':  self.user.correspondence('last_name', ldap.correspondence(method['field_lastname']))
                     if method['field_email'] != 'None':     self.user.correspondence('email', ldap.correspondence(method['field_email']))
+        else:
+            self.add_error(None, conf.error.no_ldapcache)
         return self.user.one_is_true

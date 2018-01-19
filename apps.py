@@ -58,6 +58,7 @@ class Config(object):
         tls_disable     = _('TLS is disable on this method')
         no_certificate  = _('This method does not use a certificate')
         maintain        = _('This default script not exist')
+        no_ldapcache    = _('No cached LDAP method')
 
     class message(object):
         method_works = _('The method works')
@@ -99,6 +100,12 @@ class Config(object):
             (task_cache,     _('Generate method caches')),
             (task_clean_crt, _('Clean certificates')),
             (task_clean_scp, _('Clean scripts')),
+        )
+        ldap_uri_ldap  = 'ldap://'
+        ldap_uri_ldaps = 'ldaps://'
+        ldap_uri = (
+            (ldap_uri_ldap, 'ldap://'),
+            (ldap_uri_ldaps, 'ldaps://'),
         )
         ldap_scope_base     = 'SCOPE_BASE'
         ldap_scope_onelevel = 'SCOPE_ONELEVEL'
@@ -160,6 +167,7 @@ class Config(object):
         local_check     = _('Local check')
         ldap_host       = _('Use hostname or IP address')
         ldap_define     = _('Base DN ex: dc=domain,dc=com')
+        ldap_uri        = _('uri LDAP')
         ldap_scope      = _('Scope')
         ldap_version    = _('Version')
         ldap_bind       = _('Root DN')
@@ -212,6 +220,7 @@ class Config(object):
         can_read_task        = _('Can detail and list task')
         ldap_host            = _('Hostname/IP')
         ldap_port            = _('Keep 389 to use default port')
+        ldap_uri             = _('uri LDAP (ldaps or ldap)')
         ldap_tls             = _('Use option TLS')
         ldap_define          = _('Base DN')
         ldap_scope           = _('Choice a scope. The command will be like "scope=***"')
@@ -288,7 +297,7 @@ class Config(object):
 
         ldap_fieldsets           = (_('LDAP method'), 
                                    {'classes': ('collapse',),
-                                   'fields': ('ldap_host', 'ldap_define', 'ldap_scope', 'ldap_version', 'ldap_bind', 'ldap_password', 'ldap_user', 'ldap_search')})
+                                   'fields': ('ldap_host', 'ldap_define', 'ldap_uri', 'ldap_scope', 'ldap_version', 'ldap_bind', 'ldap_password', 'ldap_user', 'ldap_search')})
 
         user_add_fieldsets       = None
         user_fieldsets           = (((None, {'fields': ('username', 'password')})),
@@ -336,7 +345,7 @@ class Config(object):
         option = 'LDAP'
         fields_check = ['ldap_host', 'ldap_define', 'ldap_scope', 'ldap_version', 'ldap_bind', 'ldap_password', 'ldap_user', 'ldap_search', 'ldap_tls_cacertfile']
 
-Config.task.maintain = [Config.choices.task_purge,Config.choices.task_check,Config.choices.task_cache,Config.choices.task_clean_crt,Config.choices.task_clean_scp]
+Config.task.maintain = [Config.choices.task_check,Config.choices.task_cache,Config.choices.task_clean_crt,Config.choices.task_clean_scp]
 
 if hasattr(settings, Config.override):
     for config,configs in getattr(settings, Config.override).items():

@@ -30,6 +30,7 @@ class MethodCheck(HybridDetailView):
     def get_context_data(self, **kwargs):
         context = super(MethodCheck, self).get_context_data(**kwargs)
         method = self.object.get_method()
+        self.object.object_method = method
         try:
             method.check()
             if self.object.error is not None:
@@ -66,7 +67,7 @@ class MethodDetail(HybridDetailView):
 
     def get_context_data(self, **kwargs):
         if conf.ldap.enable and self.object.method == conf.ldap.option:
-            self.fields_detail = self.fields_detail+['ldap_host','ldap_define','ldap_scope','ldap_version','ldap_bind','ldap_password','ldap_user','ldap_search','ldap_tls_cacert']
+            self.fields_detail = self.fields_detail+['ldap_host','ldap_define','ldap_uri','ldap_scope','ldap_version','ldap_bind','ldap_password','ldap_user','ldap_search','ldap_tls_cacert']
         return super(MethodDetail, self).get_context_data(**kwargs)
 
 @method_decorator(permission_required('simplify.can_read_method'), name='dispatch')
@@ -262,3 +263,7 @@ class TaskMaintain(HybridTemplateView):
             newtask.save()
         self.object.tasks = tasks
         return super(TaskMaintain, self).get_context_data(**kwargs)
+
+@method_decorator(is_superuser_required, name='dispatch')
+class TaskAdminMaintain(HybridAdminView, TaskMaintain):
+    view = 'maintain'
