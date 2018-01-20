@@ -70,6 +70,43 @@
     {% endif %}
 
     <br/>
+    <h2>{% trans 'TLS' %}</h2>
+    <table id="result_list">
+        <thead>
+            <tr>
+                <th>
+                    <div class="text"><span>{% trans 'TLS enable' %}</span></div>
+                    <div class="clear"></div></th>
+                    <td>{{ object.tls|boolean_icon }}</td>
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    <div class="text"><span>{% trans 'Certificate self signed' %}</span></div>
+                    <div class="clear"></div></th>
+                    <td>{{ object.self_signed|boolean_icon }}</td>
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    <div class="text"><span>{% trans 'Certificate path' %}</span></div>
+                    <div class="clear"></div></th>
+                    <td>{{ object.certificate_path }}</td>
+                </th>
+            </tr>
+            <tr>
+                <th><div class="text"><span>{% trans 'Certificate in database' %}<div class="clear"></div></th>
+                <th><div class="text"><span>{% trans 'Content in file' %}<div class="clear"></div></th>
+            </tr>
+            <tr>
+                <td><pre>{{ object.certificate }}</pre></td>
+                <td><pre>{{ object.certificate_content }}</pre></td>
+            </tr>
+        </thead>
+    </table>
+
+    <br/>
+    <h2>{% trans 'Method - ' %}{{ object.method }}</h2>
     <table id="result_list">
         <thead>
             <tr>
@@ -99,43 +136,6 @@
                 </th>
             </tr>
             {% endfor %}
-        </thead>
-    </table>
-
-    <br/>
-    <table id="result_list">
-        <thead>
-            <tr>
-                <th>
-                    <div class="text"><span>{% trans 'TLS enable' %}</span></div>
-                    <div class="clear"></div></th>
-                    <td>{{ object.tls|boolean_icon }}</td>
-                </th>
-            </tr>
-            {% if object.certificate %}
-            <tr>
-                <th>
-                    <div class="text"><span>{% trans 'Certificate self signed' %}</span></div>
-                    <div class="clear"></div></th>
-                    <td>{{ object.self_signed|boolean_icon }}</td>
-                </th>
-            </tr>
-            <tr>
-                <th>
-                    <div class="text"><span>{% trans 'Certificate path' %}</span></div>
-                    <div class="clear"></div></th>
-                    <td>{{ object.certificate_path }}</td>
-                </th>
-            </tr>
-            <tr>
-                <th><div class="text"><span>{% trans 'Certificate in database' %}<div class="clear"></div></th>
-                <th><div class="text"><span>{% trans 'Content in file' %}<div class="clear"></div></th>
-            </tr>
-            <tr>
-                <td><pre>{{ object.certificate }}</pre></td>
-                <td><pre>{{ object.certificate_content }}</pre></td>
-            </tr>
-        {% endif %}
         </thead>
     </table>
 </div>
