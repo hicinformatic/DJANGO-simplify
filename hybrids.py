@@ -29,6 +29,7 @@ class Hybrid(object):
     extension = 'html'
     fields_relation   = {}
     fields_foreignkey = {}
+    namespace         = conf.namespace
 
     def dispatch(self, request, *args, **kwargs):
         self.extension = self.kwargs['extension'] if self.kwargs['extension'] is not None else 'html'
@@ -44,7 +45,8 @@ class Hybrid(object):
         return context
 
     def get_success_url(self):
-        return reverse('{ns}:{model}-detail'.format(ns=conf.namespace, model=self.model.__name__.lower()), kwargs={ 'pk': self.object.id, 'extension': '.%s' % self.extension })
+        print('namespace: %s' % self.namespace)
+        return reverse('{ns}:{model}-detail'.format(ns=self.namespace, model=self.model.__name__.lower()), kwargs={ 'pk': self.object.id, 'extension': '.%s' % self.extension })
 
 # ██████╗██████╗ ███████╗ █████╗ ████████╗███████╗██╗   ██╗██╗███████╗██╗    ██╗
 #██╔════╝██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██╔════╝██║   ██║██║██╔════╝██║    ██║

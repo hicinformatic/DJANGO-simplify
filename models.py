@@ -227,7 +227,7 @@ class Script(Update):
 #   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
 class Task(Update):
     script      = models.ForeignKey(Script, blank=True, on_delete=models.CASCADE, null=True)
-    default     = models.CharField(conf.vn.status, choices=conf.choices.task, blank=True, help_text=conf.ht.default, max_length=18, null=True)
+    default     = models.CharField(conf.vn.status, choices=conf.choices.task, blank=True, help_text=conf.ht.default, max_length=25, null=True)
     info        = models.TextField(conf.vn.info, blank=True, null=True, help_text=conf.ht.info)
     status      = models.CharField(conf.vn.status, choices=conf.choices.status_status, default=conf.choices.status_order, max_length=8, help_text=conf.ht.status)
     command     = models.CharField(conf.vn.commmand, blank=True, editable=False, help_text=conf.ht.commmand,  max_length=254, null=True)
