@@ -243,7 +243,7 @@ class TaskPurge(HybridTemplateView):
             Task.objects.filter(pk__in=tasks).exclude(pk=list(tasks)[0]).delete()
         return context
 
-@method_decorator(permission_required('simplify.can_add_task'), name='dispatch')
+@method_decorator(permission_required('simplify.add_task'), name='dispatch')
 class TaskMaintain(HybridTemplateView):
     fields_detail = ['title', 'tasks']
     pk     = 'title'
