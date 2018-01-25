@@ -81,6 +81,7 @@ class MethodList(HybridListView):
             'field_firstname', 'field_lastname', 'field_email',
             'error', 'status']
     fields_relation = {'groups': ['id', 'name'], 'permissions': ['id', 'codename']}
+    paginate_by = conf.paginate.method
 
 @method_decorator(permission_required('simplify.can_read_method'), name='dispatch')
 class MethodGetCertificate(HybridDetailView):
@@ -143,6 +144,7 @@ class UserList(HybridListView):
     model = User
     fields_detail = ['id', 'username', 'date_joined']
     fields_relation = {'groups': ['id', 'name'], 'user_permissions': ['id', 'codename']}
+    paginate_by = conf.paginate.user
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.has_perm('simplify.can_see_email'):       self.fields_detail = self.fields_detail + ['email']
@@ -180,6 +182,7 @@ class ScriptDetail(HybridDetailView):
 class ScriptList(HybridListView):
     model = Script
     fields_detail = ['id', 'name', 'script']
+    paginate_by = conf.paginate.script
 
 @method_decorator(permission_required('simplify.can_read_script'), name='dispatch')
 class ScriptGet(HybridDetailView):
@@ -226,6 +229,7 @@ class TaskDetail(HybridDetailView):
 class TaskList(HybridListView):
     model = Task
     fields_detail = ['script', 'default', 'info', 'status', 'error']
+    paginate_by = conf.paginate.task
 
 @method_decorator(permission_required('simplify.delete_task'), name='dispatch')
 class TaskPurge(HybridTemplateView):

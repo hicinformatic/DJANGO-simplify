@@ -338,6 +338,13 @@ class Config(object):
         maintain     = []
         maintain_scp = []
 
+    class paginate(object):
+        group  = 25
+        method = 25
+        user   = 50
+        script = 50
+        task   = 50
+
     class ldap(object):
         name   = _('LDAP')
         login  = _('LDAP Login')
@@ -368,7 +375,6 @@ class SimplifyConfig(AppConfig, Config):
             self.admin.user_list_display = (self.user.username_field, 'is_active', 'is_staff', 'method', 'date_joined')
         if self.admin.user_add_fieldsets is None:
             self.admin.user_add_fieldsets = (( None, { 'fields': (self.user.username_field, self.user.required_fields, 'password1', 'password2') }),)
-
 
     def key():
         return ''.join(random.choice('-._~+/'+string.hexdigits) for x in range(SimplifyConfig.user.key_max_length))
