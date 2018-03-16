@@ -10,6 +10,7 @@ task.update('start', 'Started')
 import urllib.request, urllib.parse, json
 url = 'task/purge.json'
 url = task.getUrl(url)
+print(url)
 
 task.update('running', 'Delete tasks')
 

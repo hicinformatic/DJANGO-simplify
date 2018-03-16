@@ -1,3 +1,4 @@
 "label","help"
 {% for field in form %}"{{ field.html_name }}","{{ field.help_text }}"
 {% endfor %}"token","{{ csrf_token }}"
+{% for key, value in form.errors.items %}"error_{{ key }}": "{{ value|striptags }}"{% endfor %}

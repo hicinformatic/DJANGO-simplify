@@ -70,7 +70,7 @@ if [ $CAN_RUN -eq 1 ] ; then
         while read pid etimes cmd
         do
             if [ "$etimes" -gt $TIMEOUT ]; then
-                if [ $STATUS == 1 ]; then
+                if [ $CAN_RUN == 1 ]; then
                     $(kill -9 $pid > /dev/null)
                     if [ $SCRIPTPROC -gt 1 ]; then
                         INFO="${SCRIPTPROC} were killed"
@@ -89,7 +89,7 @@ fi
 if [ $CAN_RUN -eq 1 ] ; then
     $(curl -sb $FILE_JAR -d "status=ready&info=Nothing abnormal&error=&csrfmiddlewaretoken=${TOKEN}" ${URL_POST})
 else
-    $(curl -sb $FILE_JAR $URL_READY -d "status=error&info=&error=${ERROR}&csrfmiddlewaretoken=${TOKEN}")
+    $(curl -sb $FILE_JAR -d "status=error&info=&error=${ERROR}&csrfmiddlewaretoken=${TOKEN}" ${URL_POST})
 fi
 $(rm $FILE_JAR)
 $(rm $FILE_TXT)

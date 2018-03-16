@@ -10,7 +10,7 @@ register = template.Library()
 
 @register.filter(name='boolean_icon')
 def boolean_icon(field_val):
-    svg = {True: 'yes', False: 'no', None: 'unknown', '': 'unknown' }
+    svg = {True: 'yes', 'True': 'yes', False: 'no', 'False': 'no', None: 'unknown', '': 'unknown' }
     return format_html('<img src="{}" alt="{}" />', static('admin/img/icon-{}.svg'.format(svg[field_val])), field_val) if field_val in svg else field_val
 
 @register.simple_tag(name='getattribute_field')

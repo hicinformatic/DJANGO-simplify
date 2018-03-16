@@ -8,4 +8,8 @@
         <label>token</label>
         <help>{{ csrf_token }}</help>
     </field>
+    {% for key, value in form.errors.items %}<field>
+        <label>error_{{ key }}</label>
+        <label>{{ value|striptags }}</label>
+    </field>{% endfor %}
 </form>

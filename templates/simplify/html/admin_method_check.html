@@ -36,7 +36,7 @@
                 {% getattribute object field as value %}
                 {% if field != 'error' and field != 'certificate' and field != 'certificate_path' and field != 'tls' and field != 'self_signed' %}
                 {% if field == 'id' %}
-                <td class="field-{{ field }}">{{ value }}</td>
+                <td class="field-{{ field }}">{{ value|boolean_icon }}</td>
                 {% elif field == 'groups' %}
                 <td class="field-{{ field }}">
                     {% if object.groups %}

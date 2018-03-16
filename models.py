@@ -166,6 +166,7 @@ class User(AbstractUser):
         ordering            = [conf.user.username_field]
         permissions         = (
             ('can_use_api', conf.ht.can_use_api),
+            ('can_csrf_exempt', conf.ht.can_csrf_exempt),
             ('can_read_user', conf.ht.can_read_user),
             ('can_see_email', conf.ht.can_see_email),
             ('can_see_firstname', conf.ht.can_see_firstname),
@@ -190,9 +191,10 @@ class User(AbstractUser):
 #███████║╚██████╗██║  ██║██║██║        ██║   
 #╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝╚═╝        ╚═╝
 class Script(Update):
-    name   = models.CharField(conf.vn.name_script, help_text=conf.ht.name_script, max_length=254, unique=True)
-    script = models.CharField(conf.vn.script, help_text=conf.ht.script, max_length=254, unique=True)
-    code   = models.TextField(conf.vn.code, help_text=conf.ht.code)
+    name       = models.CharField(conf.vn.name_script, help_text=conf.ht.name_script, max_length=254, unique=True)
+    script     = models.CharField(conf.vn.script, help_text=conf.ht.script, max_length=254, unique=True)
+    code       = models.TextField(conf.vn.code, help_text=conf.ht.code)
+    recurrence = models.CharField(conf.vn.recurrence, choices=conf.choices.recurrence, help_text=conf.ht.recurrence, max_length=7, null=True, blank=True)
 
     class Meta:
         verbose_name        = conf.vbn.script
@@ -227,7 +229,7 @@ class Script(Update):
 #   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
 class Task(Update):
     script      = models.ForeignKey(Script, blank=True, on_delete=models.CASCADE, null=True)
-    default     = models.CharField(conf.vn.status, choices=conf.choices.task, blank=True, help_text=conf.ht.default, max_length=25, null=True)
+    default     = models.CharField(conf.vn.status, choices=conf.choices.task, blank=True, help_text=conf.ht.default, max_length=18, null=True)
     info        = models.TextField(conf.vn.info, blank=True, null=True, help_text=conf.ht.info)
     status      = models.CharField(conf.vn.status, choices=conf.choices.status_status, default=conf.choices.status_order, max_length=8, help_text=conf.ht.status)
     command     = models.CharField(conf.vn.commmand, blank=True, editable=False, help_text=conf.ht.commmand,  max_length=254, null=True)
@@ -265,12 +267,13 @@ class Task(Update):
         prepare['robot']            = conf.task.robot
         prepare['password']         = conf.task.password
         self.local_check = conf.task.local_check.format(**prepare)
+        self.status = conf.choices.status_prepare
         self.save()
 
     def can_run(self):
         if self.status == conf.choices.status_error:
             return False
-        elif self.status != conf.choices.status_order:
+        elif self.status != conf.choices.status_prepare:
             self.error = conf.error.not_order
             self.save()
             return False

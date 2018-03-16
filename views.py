@@ -3,6 +3,9 @@ from django.contrib.auth.decorators import (permission_required , login_required
 from django.utils.decorators import method_decorator
 from django.utils import timezone
 from django.http import HttpResponse
+from django.views.generic.base import RedirectView
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 
 from .apps import SimplifyConfig as conf
 from .hybrids import (FakeModel, HybridAdminView, HybridCreateView, HybridUpdateView, HybridDetailView, HybridListView, HybridTemplateView)
@@ -10,6 +13,7 @@ from .models import (Method, User, Script, Task)
 from .decorators import is_superuser_required
 
 from datetime import timedelta
+import os, json, time, random
 
 #███╗   ███╗███████╗████████╗██╗  ██╗ ██████╗ ██████╗ 
 #████╗ ████║██╔════╝╚══██╔══╝██║  ██║██╔═══██╗██╔══██╗
@@ -135,7 +139,7 @@ class UserDetail(HybridDetailView):
         if request.user.has_perm('simplify.can_see_method'):      self.fields_detail = self.fields_detail + ['method']
         if request.user.has_perm('simplify.can_see_groups'):      self.fields_detail = self.fields_detail + ['groups']
         if request.user.has_perm('simplify.can_see_permissions'): self.fields_detail = self.fields_detail + ['user_permissions']
-        if request.user.has_perm('simplify.can_see_additional'):  self.fields_detail = self.fields_detail + ['additional']
+        #if request.user.has_perm('simplify.can_see_additional'):  self.fields_detail = self.fields_detail + ['additional']
         if request.user.has_perm('simplify.can_see_key'):         self.fields_detail = self.fields_detail + ['key']
         return super(UserDetail, self).dispatch(request)
 
@@ -153,7 +157,7 @@ class UserList(HybridListView):
         if request.user.has_perm('simplify.can_see_groups'):      self.fields_detail = self.fields_detail + ['groups']
         if request.user.has_perm('simplify.can_see_permissions'): self.fields_detail = self.fields_detail + ['user_permissions']
         if request.user.has_perm('simplify.can_see_method'):      self.fields_detail = self.fields_detail + ['method']
-        if request.user.has_perm('simplify.can_see_additional'):  self.fields_detail = self.fields_detail + ['additional']
+        #if request.user.has_perm('simplify.can_see_additional'):  self.fields_detail = self.fields_detail + ['additional']
         if request.user.has_perm('simplify.can_see_key'):         self.fields_detail = self.fields_detail + ['key']
         return super(UserList, self).dispatch(request)
 
@@ -176,12 +180,12 @@ class ScriptUpdate(HybridUpdateView):
 @method_decorator(permission_required('simplify.can_read_script'), name='dispatch')
 class ScriptDetail(HybridDetailView):
     model = Script
-    fields_detail = ['id', 'name', 'script']
+    fields_detail = ['id', 'name', 'script', 'recurrence', 'script_path']
 
 @method_decorator(permission_required('simplify.can_read_script'), name='dispatch')
 class ScriptList(HybridListView):
     model = Script
-    fields_detail = ['id', 'name', 'script']
+    fields_detail = ['id', 'name', 'script', 'recurrence', 'script_path']
     paginate_by = conf.paginate.script
 
 @method_decorator(permission_required('simplify.can_read_script'), name='dispatch')
@@ -233,6 +237,7 @@ class TaskList(HybridListView):
 
 @method_decorator(permission_required('simplify.delete_task'), name='dispatch')
 class TaskPurge(HybridTemplateView):
+    model = Task
     fields_detail = ['number',]
     object = FakeModel()
 
@@ -244,19 +249,48 @@ class TaskPurge(HybridTemplateView):
         tasks = tasks.values_list('pk', flat=True)
         if self.object.number > 0:
             self.object.number = self.object.number-1
-            Task.objects.filter(pk__in=tasks).exclude(pk=list(tasks)[0]).delete()
+            Task.objects.filter(pk__in=list(tasks)).exclude(pk=list(tasks)[0]).delete()
+        return context
+
+@method_decorator(permission_required('simplify.add_task'), name='dispatch')
+class TaskStartPurge(RedirectView):
+    model = Task
+    object = FakeModel()
+
+    def get_redirect_url(self, *args, **kwargs):
+        task = Task(default=conf.choices.task_purge)
+        task.save()
+        return reverse('simplify:task-detail', kwargs={'pk': task.id, 'extension': '.%s' % self.kwargs['extension']})
+
+@method_decorator(permission_required('simplify.delete_task'), name='dispatch')
+class TaskPurge(HybridTemplateView):
+    model = Task
+    fields_detail = ['number',]
+    object = FakeModel()
+
+    def get_context_data(self, **kwargs):
+        context = super(TaskPurge, self).get_context_data(**kwargs)
+        delta = timezone.now()-timedelta(days=conf.task.purge_day)
+        tasks = Task.objects.filter(date_update__lte=delta).order_by('-id')[:conf.task.purge_number]
+        self.object.number = tasks.count()
+        tasks = tasks.values_list('pk', flat=True)
+        if self.object.number > 0:
+            self.object.number = self.object.number-1
+            Task.objects.filter(pk__in=list(tasks)).exclude(pk=list(tasks)[0]).delete()
         return context
 
 @method_decorator(permission_required('simplify.add_task'), name='dispatch')
 class TaskMaintain(HybridTemplateView):
+    model = Task
     fields_detail = ['title', 'tasks']
-    pk     = 'title'
+    pk = 'title'
     object = FakeModel()
 
     def get_context_data(self, **kwargs):
         self.object.title = 'Maintain'
         tasks = {}
         for task in conf.task.maintain:
+            time.sleep(random.randint(0,5))
             newtask = Task(default=task)
             if task not in dict(conf.choices.task):
                 tasks[task] = 'Error'
@@ -267,6 +301,69 @@ class TaskMaintain(HybridTemplateView):
             newtask.save()
         self.object.tasks = tasks
         return super(TaskMaintain, self).get_context_data(**kwargs)
+
+@method_decorator(permission_required('simplify.add_task'), name='dispatch')
+class TaskMinutes(HybridTemplateView):
+    model = Task
+    fields_detail = ['title', 'number']
+    object = FakeModel()
+
+    def get_context_data(self, **kwargs):
+        self.object.title = 'Task minutes'
+        self.object.number = 0
+        cache = '{}/{}.json'.format(conf.directory.cache, 'scripts')
+        if os.path.isfile(cache):
+            scripts = json.load(open(cache))
+            for script in scripts:
+                if script['recurrence'] == conf.choices.recurrence_minutes:
+                    time.sleep(random.randint(0,5))
+                    self.object.number += 1
+                    task = Task()
+                    task.script_id = script['id']
+                    task.save()
+        return super(TaskMinutes, self).get_context_data(**kwargs)
+
+@method_decorator(permission_required('simplify.add_task'), name='dispatch')
+class TaskHours(HybridTemplateView):
+    model = Task
+    fields_detail = ['title', 'number']
+    object = FakeModel()
+
+    def get_context_data(self, **kwargs):
+        self.object.title = 'Task hours'
+        self.object.number = 0
+        cache = '{}/{}.json'.format(conf.directory.cache, 'scripts')
+        if os.path.isfile(cache):
+            scripts = json.load(open(cache))
+            for script in scripts:
+                if script['recurrence'] == conf.choices.recurrence_hours:
+                    time.sleep(random.randint(0,5))
+                    self.object.number =+ 1
+                    task = Task()
+                    task.script_id = script['id']
+                    task.save()
+        return super(TaskHours, self).get_context_data(**kwargs)
+
+@method_decorator(permission_required('simplify.add_task'), name='dispatch')
+class TaskDays(HybridTemplateView):
+    model = Task
+    fields_detail = ['title', 'number']
+    object = FakeModel()
+
+    def get_context_data(self, **kwargs):
+        self.object.title = 'Task hours'
+        self.object.number = 0
+        cache = '{}/{}.json'.format(conf.directory.cache, 'scripts')
+        if os.path.isfile(cache):
+            scripts = json.load(open(cache))
+            for script in scripts:
+                if script['recurrence'] == conf.choices.recurrence_days:
+                    time.sleep(random.randint(0,5))
+                    self.object.number += 0
+                    task = Task()
+                    task.script_id = script['id']
+                    task.save()
+        return super(TaskDays, self).get_context_data(**kwargs)
 
 @method_decorator(is_superuser_required, name='dispatch')
 class TaskAdminMaintain(HybridAdminView, TaskMaintain):

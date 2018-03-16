@@ -13,11 +13,12 @@ class Config(object):
         certificates = '%s/certs' % app
         cache        = '%s/cache' % app
         tasks        = '%s/tasks' % app
+        logs         = '%s/logs' % app
         settings     = settings.SETTINGS_DIR
 
     class log(object):
         logger = 'logger_{}'
-        log_type = 'console'
+        log_type = 'file'
         log_level = 7
         format_syslog = '[{}] {}'
         format_file = '{}:{}:{}.{} - {} | [{}] {}\n'
@@ -77,6 +78,7 @@ class Config(object):
         )
         status_error    = 'error'
         status_order    = 'order'
+        status_prepare  = 'prepare'
         status_ready    = 'ready'
         status_start    = 'start'
         status_running  = 'running'
@@ -84,6 +86,7 @@ class Config(object):
         status_status   = (
             (status_error,    _('In error')),
             (status_order,    _('Ordered')),
+            (status_prepare,  _('Prepared')),
             (status_ready,    _('Ready')),
             (status_start,    _('Started')),
             (status_running,  _('Running')),
@@ -94,12 +97,22 @@ class Config(object):
         task_cache = 'cache_methods'
         task_clean_crt = 'clean_certificates'
         task_clean_scp = 'clean_scripts'
+        task_cache_scp = 'cache_scripts'
         task = (
             (task_purge,     _('Purge tasks')),
             (task_check,     _('Check methods')),
             (task_cache,     _('Generate method caches')),
             (task_clean_crt, _('Clean certificates')),
             (task_clean_scp, _('Clean scripts')),
+            (task_cache_scp, _('Cache scripts')),
+        )
+        recurrence_minutes = 'minutes'
+        recurrence_hours   = 'hours'
+        recurrence_days    = 'days'
+        recurrence = (
+            (recurrence_minutes, _('Every minute')),
+            (recurrence_hours,   _('Every hour')),
+            (recurrence_days,    _('Everyday')),
         )
         ldap_uri_ldap  = 'ldap://'
         ldap_uri_ldaps = 'ldaps://'
@@ -160,6 +173,7 @@ class Config(object):
         name_script     = _('Script name')
         script          = _('Script filename')
         code            = _('Python code')
+        recurrence      = _('Recurrence')
         task            = _('Task')
         info            = _('More informations')
         status          = _('Status')
@@ -195,6 +209,7 @@ class Config(object):
         can_writecert_method = _('Can write certificate method')
         can_check_method     = _('Can check method')
         can_use_api          = _('Can use API')
+        can_csrf_exempt      = _('Can csrf exempt')
         can_read_user        = _('Can detail and list user')
         can_see_email        = _('Can see email')
         can_see_firstname    = _('Can see firstname')
@@ -207,6 +222,7 @@ class Config(object):
         name_script          = _('Script name')
         script               = _('Script filename without extension .py')
         code                 = _('Python code')
+        recurrence           = _('Recurrence')
         script_path          = _('Path of the script')
         can_update_script    = _('Can update script')
         can_read_script      = _('Can detail and list script')
@@ -253,6 +269,7 @@ class Config(object):
         xml  = 'application/xml'
         authorized = ['html', 'csv', 'json', 'txt', 'xml']
         regex = 'html'
+        charset = 'utf-8'
 
     class template(object):
         detail = 'simplify/{ext}/detail.{ext}'
@@ -310,9 +327,9 @@ class Config(object):
         user_filter_horizontal   = ('groups', 'user_permissions', 'additional')
         user_list_display        = None
         user_readonly_fields     = ('date_joined', 'date_update', 'update_by')
-        script_fieldsets         = ((None, { 'fields': ('name', 'script', 'code', 'script_path')}),
+        script_fieldsets         = ((None, { 'fields': ('name', 'script', 'recurrence', 'code', 'script_path')}),
                                    (log_fieldsets))
-        script_list_display      = ('name', 'script', 'admin_download_script')
+        script_list_display      = ('name', 'script', 'recurrence', 'admin_download_script')
         script_readonly_fields   = ('update_by', 'date_create', 'date_update', 'error', 'script_path', 'admin_download_script')
         task_fieldsets           = ((None, { 'fields': ('script', 'default', 'status', 'info', 'error', 'command', 'local_check')}),
                                    (log_fieldsets))
@@ -334,7 +351,7 @@ class Config(object):
         command      = '{background} {python} {directory}/{task}{extension} {id} {settings_dir} {background_end}'
         local_check  = '{background} {binary} {directory}/{script}{script_extension} {port} {namespace} {timeout} {id} {robot} {password} {background_end}'
         purge_number = 100
-        purge_day    = 5
+        purge_day    = 0
         maintain     = []
         maintain_scp = []
 
@@ -370,6 +387,7 @@ class SimplifyConfig(AppConfig, Config):
         from . import signals
         if not os.path.exists(self.directory.certificates): os.makedirs(self.directory.certificates)
         if not os.path.exists(self.directory.cache): os.makedirs(self.directory.cache)
+        if self.log.log_type == 'file' and not os.path.exists(self.directory.logs): os.makedirs(self.directory.logs)
         self.extension.regex = '|'.join([ext for ext in self.extension.authorized])
         if self.admin.user_list_display is None:
             self.admin.user_list_display = (self.user.username_field, 'is_active', 'is_staff', 'method', 'date_joined')
@@ -377,7 +395,7 @@ class SimplifyConfig(AppConfig, Config):
             self.admin.user_add_fieldsets = (( None, { 'fields': (self.user.username_field, self.user.required_fields, 'password1', 'password2') }),)
 
     def key():
-        return ''.join(random.choice('-._~+/'+string.hexdigits) for x in range(SimplifyConfig.user.key_max_length))
+        return ''.join(random.choice('-._~+'+string.hexdigits) for x in range(SimplifyConfig.user.key_max_length))
 
 #██╗      ██████╗  ██████╗  ██████╗ ███████╗██████╗ 
 #██║     ██╔═══██╗██╔════╝ ██╔════╝ ██╔════╝██╔══██╗
@@ -408,7 +426,7 @@ class SimplifyConfig(AppConfig, Config):
     @staticmethod
     def logger_file(lvl, code, msg):
         now = datetime.datetime.now()
-        logfile = SimplifyConfig.log.name_file.format(SimplifyConfig.log.dir_logs, SimplifyConfig.name, now.year, now.month, now.day)
+        logfile = SimplifyConfig.log.name_file.format(SimplifyConfig.directory.logs, SimplifyConfig.name, now.year, now.month, now.day)
         log = open(logfile, SimplifyConfig.log.file_open_method)
         log.write(SimplifyConfig.log.format_file.format(now.hour, now.minute, now.second, now.microsecond, lvl, SimplifyConfig.name, msg))
         log.close()

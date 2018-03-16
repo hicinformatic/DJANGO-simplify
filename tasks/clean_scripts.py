@@ -30,7 +30,6 @@ try:
     curl.add_header('Authorization', 'Basic %s' % encoded_credentials.decode("ascii"))
     with urllib.request.urlopen(curl)  as url:
         scripts = json.loads(url.read().decode())
-        print(scripts)
         for script in scripts:
             url_writescript = task.getUrl('script/%s/write.json' % script['id'])
             url_writescript = urllib.request.Request(url_writescript)

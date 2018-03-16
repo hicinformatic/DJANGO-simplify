@@ -27,15 +27,18 @@ class FakeModel(object):
 #╚═╝  ╚═╝   ╚═╝   ╚═════╝ ╚═╝  ╚═╝╚═╝╚═════╝
 class Hybrid(object):
     extension = 'html'
+    encoding = conf.extension.charset
     fields_relation   = {}
     fields_foreignkey = {}
-    namespace         = conf.namespace
+    current_namespace = conf.namespace
+    current_model = None
 
     def dispatch(self, request, *args, **kwargs):
         self.extension = self.kwargs['extension'] if self.kwargs['extension'] is not None else 'html'
+        self.current_model = self.model.__name__.lower()
         if self.extension in conf.extension.authorized:
             self.template_name = self.template_name.format(ext=self.extension)
-            self.content_type = getattr(conf.extension, self.extension)
+            self.content_type = '{}; charset={}'.format(getattr(conf.extension, self.extension), self.encoding)
         return super(Hybrid, self).dispatch(request)
 
     def get_context_data(self, **kwargs):
@@ -45,8 +48,7 @@ class Hybrid(object):
         return context
 
     def get_success_url(self):
-        print('namespace: %s' % self.namespace)
-        return reverse('{ns}:{model}-detail'.format(ns=self.namespace, model=self.model.__name__.lower()), kwargs={ 'pk': self.object.id, 'extension': '.%s' % self.extension })
+        return reverse('{ns}:{model}-detail'.format(ns=self.current_namespace, model=self.current_model), kwargs={ 'pk': self.object.id, 'extension': '.%s' % self.extension })
 
 # ██████╗██████╗ ███████╗ █████╗ ████████╗███████╗██╗   ██╗██╗███████╗██╗    ██╗
 #██╔════╝██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██╔════╝██║   ██║██║██╔════╝██║    ██║
@@ -120,12 +122,12 @@ class HybridAdminView(Hybrid):
     def get_context_data(self, **kwargs):
         context = super(HybridAdminView, self).get_context_data(**kwargs)
         opts    = self.model._meta
-        #has_change_permission = self.request.user.has_perm('{}.{}'.format(opts.app_label, get_permission_codename('change', opts)))
+        has_change_permission = self.request.user.has_perm('{}.{}'.format(opts.app_label, 'can_change'))
         context.update({
             'opts': opts,
             'app_label': opts.app_label,
             'original': self.get_object(),
-            #'has_change_permission': has_change_permission
+            'has_change_permission': has_change_permission
         })
         context.update(admin.site.each_context(self.request))
         return context
