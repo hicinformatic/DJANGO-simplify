@@ -16,7 +16,7 @@ class apiMiddleware:
                 user = b64decode(user[1]).decode().split(':')
                 try:
                     user = User.objects.get(username=user[0], key=user[1], is_active=True)
-                    can_use_api = user.has_perm('User.can_use_api', User)
+                    can_use_api = user.has_perm('simplify.can_use_api')
                     if user.is_superuser or can_use_api:
                         login(request, user)
                         request.user.backend = conf.user.api_backend
