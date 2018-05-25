@@ -1,6 +1,7 @@
 from django.views.generic import (DetailView, TemplateView)
 from django.views.generic.edit import (CreateView, UpdateView)
 from django.views.generic.list import ListView
+from django.urls import reverse
 
 from .apps import (SimplifyConfig as conf)
 
@@ -34,7 +35,10 @@ class Hybrid(object):
     current_model = None
 
     def dispatch(self, request, *args, **kwargs):
-        self.extension = self.kwargs['extension'] if self.kwargs['extension'] is not None else 'html'
+        if 'extension' in self.kwargs:
+            self.extension = self.kwargs['extension'] 
+        else:
+            self.extension = 'html'
         self.current_model = self.model.__name__.lower()
         if self.extension in conf.extension.authorized:
             self.template_name = self.template_name.format(ext=self.extension)
@@ -43,12 +47,19 @@ class Hybrid(object):
 
     def get_context_data(self, **kwargs):
         context = super(Hybrid, self).get_context_data(**kwargs)
+        context.update({ 'template': conf.template.template })
         context.update({ 'fields_relation': self.fields_relation })
         context.update({ 'fields_foreignkey': self.fields_foreignkey })
         return context
+    
+    def form_valid(self, form):
+        obj = form.save(commit=False)
+        if self.request.user.username in ['', None]: obj.update_by = conf.user.anonymous
+        else: obj.update_by = self.request.user.username
+        return super(Hybrid, self).form_valid(form)
 
     def get_success_url(self):
-        return reverse('{ns}:{model}-detail'.format(ns=self.current_namespace, model=self.current_model), kwargs={ 'pk': self.object.id, 'extension': '.%s' % self.extension })
+        return reverse('{ns}:{model}-detail'.format(ns=self.current_namespace, model=self.current_model), kwargs={ 'pk': self.object.pk, 'extension': '.%s' % self.extension })
 
 # ██████╗██████╗ ███████╗ █████╗ ████████╗███████╗██╗   ██╗██╗███████╗██╗    ██╗
 #██╔════╝██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██╔════╝██║   ██║██║██╔════╝██║    ██║
@@ -65,9 +76,13 @@ class HybridCreateView(Hybrid, CreateView):
 #██║   ██║██╔═══╝ ██║  ██║██╔══██║   ██║   ██╔══╝  ╚██╗ ██╔╝██║██╔══╝  ██║███╗██║
 #╚██████╔╝██║     ██████╔╝██║  ██║   ██║   ███████╗ ╚████╔╝ ██║███████╗╚███╔███╔╝
 # ╚═════╝ ╚═╝     ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝  ╚═══╝  ╚═╝╚══════╝ ╚══╝╚══╝
-from django.urls import reverse
 class HybridUpdateView(Hybrid, UpdateView):
     template_name = conf.template.form
+
+    def form_valid(self, form):
+        obj = form.save(commit=False)
+        obj.update_by = self.request.user.username
+        return super(HybridCreateView, self).form_valid(form)
 
 #██╗     ██╗███████╗████████╗██╗   ██╗██╗███████╗██╗    ██╗
 #██║     ██║██╔════╝╚══██╔══╝██║   ██║██║██╔════╝██║    ██║

@@ -276,6 +276,7 @@ class Config(object):
         form   = 'simplify/{ext}/form.{ext}'
         listt  = 'simplify/{ext}/list.{ext}'
         admin  = 'simplify/{ext}/admin_{model}_{view}.{ext}'
+        template = 'base.html'
 
     class user(object):
         login_method    = 'login_method'
@@ -295,6 +296,7 @@ class Config(object):
         normalize       = 'NFKC'
         api_backend     = 'user.simplify.api'
         robot_backend   = 'user.simplify.robot'
+        anonymous       = 'user.anonymous'
 
     class admin(object):
         site_header              = _('Django administration')
