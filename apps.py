@@ -15,6 +15,8 @@ class Config(object):
         tasks        = '%s/tasks' % app
         logs         = '%s/logs' % app
         settings     = settings.SETTINGS_DIR
+        #images       = '%s/%s' % (settings.STATIC_ROOT, 'images')
+        images       = settings.STATIC_URL
 
     class log(object):
         logger = 'logger_{}'
@@ -267,8 +269,17 @@ class Config(object):
         json = 'application/json'
         txt  = 'text/plain'
         xml  = 'application/xml'
+        gif  = ['image/gif',]
+        jpeg = ['image/jpeg', 'image/pjpeg']
+        jpg  = ['image/jpeg', 'image/pjpeg']
+        png  = ['image/png', 'image/x-png']
+        tiff = ['image/tiff',]
+        ico  = ['image/vnd.microsoft.icon', 'image/x-icon']
+        svg  = ['image/svg+xml']
         authorized = ['html', 'csv', 'json', 'txt', 'xml']
+        images = ['gif', 'jpeg', 'jpg', 'png', 'tiff', 'ico', 'svg']
         regex = 'html'
+        regex_img = 'png'
         charset = 'utf-8'
 
     class template(object):
@@ -391,6 +402,7 @@ class SimplifyConfig(AppConfig, Config):
         if not os.path.exists(self.directory.cache): os.makedirs(self.directory.cache)
         if self.log.log_type == 'file' and not os.path.exists(self.directory.logs): os.makedirs(self.directory.logs)
         self.extension.regex = '|'.join([ext for ext in self.extension.authorized])
+        self.extension.regex_img = '|'.join([ext for ext in self.extension.images])
         if self.admin.user_list_display is None:
             self.admin.user_list_display = (self.user.username_field, 'is_active', 'is_staff', 'method', 'date_joined')
         if self.admin.user_add_fieldsets is None:

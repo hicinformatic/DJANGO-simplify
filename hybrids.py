@@ -123,6 +123,22 @@ class HybridDetailView(Hybrid, DetailView):
 class HybridTemplateView(HybridDetailView, TemplateView):
     pass
 
+from django.http import HttpResponse
+from django.http import Http404
+class HybridImageView(DetailView):
+    binary_field = None
+    title_field = None
+    prefix = None
+    
+    def render_to_response(self, context, **kwargs):
+        if 'extension' in self.kwargs:
+            self.extension = self.kwargs['extension'] 
+        if self.extension in conf.extension.images:
+            response = HttpResponse(getattr(self.object, self.binary_field), content_type=getattr(conf.extension, self.extension)[0])
+            response['Content-Disposition'] = 'filename="%s%s.jpg"' % (self.prefix, getattr(self.object, self.title_field))
+            return response
+        raise Http404()
+
 # █████╗ ██████╗ ███╗   ███╗██╗███╗   ██╗
 #██╔══██╗██╔══██╗████╗ ████║██║████╗  ██║
 #███████║██║  ██║██╔████╔██║██║██╔██╗ ██║
