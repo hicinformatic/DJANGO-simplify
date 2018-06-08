@@ -14,9 +14,9 @@ class Config(object):
         cache        = '%s/cache' % app
         tasks        = '%s/tasks' % app
         logs         = '%s/logs' % app
+        images       = settings.STATIC_URL
         settings     = settings.SETTINGS_DIR
         #images       = '%s/%s' % (settings.STATIC_ROOT, 'images')
-        images       = settings.STATIC_URL
 
     class log(object):
         logger = 'logger_{}'
@@ -324,11 +324,9 @@ class Config(object):
         method_readonly_fields   = ('update_by', 'date_create', 'date_update', 'error', 'certificate_path', 'certificate_content')
         method_list_filter       = ('method', 'enable',)
         method_search_fields     = ('name',)
-
         ldap_fieldsets           = (_('LDAP method'), 
                                    {'classes': ('collapse',),
                                    'fields': ('ldap_host', 'ldap_define', 'ldap_uri', 'ldap_scope', 'ldap_version', 'ldap_bind', 'ldap_password', 'ldap_user', 'ldap_search')})
-
         user_add_fieldsets       = None
         user_fieldsets           = (((None, {'fields': ('username', 'password')})),
                                    ((_('Personal info'), {'fields': ('email', 'first_name', 'last_name')})),
@@ -340,14 +338,17 @@ class Config(object):
         user_filter_horizontal   = ('groups', 'user_permissions', 'additional')
         user_list_display        = None
         user_readonly_fields     = ('date_joined', 'date_update', 'update_by')
+        user_list_filter         = ('method', 'is_active', 'is_staff', 'is_superuser', 'is_robot')
         script_fieldsets         = ((None, { 'fields': ('name', 'script', 'recurrence', 'code', 'script_path')}),
                                    (log_fieldsets))
         script_list_display      = ('name', 'script', 'recurrence', 'admin_download_script')
         script_readonly_fields   = ('update_by', 'date_create', 'date_update', 'error', 'script_path', 'admin_download_script')
+        script_list_filter       = ('recurrence',)
         task_fieldsets           = ((None, { 'fields': ('script', 'default', 'status', 'info', 'error', 'command', 'local_check')}),
                                    (log_fieldsets))
         task_list_display        = ('__str__', 'status')
         task_readonly_fields     = ('update_by', 'date_create', 'date_update', 'error',  'command', 'info', 'local_check')
+        task_list_filter         = ('script', 'default')
 
     class task(object):
         robot      = 'robot'

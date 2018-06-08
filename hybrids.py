@@ -92,6 +92,7 @@ class HybridUpdateView(Hybrid, UpdateView):
 #╚══════╝╚═╝╚══════╝   ╚═╝     ╚═══╝  ╚═╝╚══════╝ ╚══╝╚══╝
 class HybridListView(Hybrid, ListView):
     template_name = conf.template.listt
+    ordering = ['-date_create']
     pk = None
 
     def get_context_data(self, **kwargs):

@@ -107,6 +107,7 @@ class CustomUserAdmin(OverAdmin, UserAdmin):
     filter_horizontal = conf.admin.user_filter_horizontal
     list_display      = conf.admin.user_list_display
     readonly_fields   = conf.admin.user_readonly_fields
+    list_filter       = conf.admin.user_list_filter
 
 @admin.register(Script)
 class ScriptAdmin(OverAdmin, admin.ModelAdmin):
@@ -114,6 +115,7 @@ class ScriptAdmin(OverAdmin, admin.ModelAdmin):
     fieldsets       = conf.admin.script_fieldsets
     list_display    = conf.admin.script_list_display
     readonly_fields = conf.admin.script_readonly_fields
+    list_filter     = conf.admin.script_list_filter
 
 @admin.register(Task)
 class TaskAdmin(OverAdmin, admin.ModelAdmin):
@@ -121,3 +123,4 @@ class TaskAdmin(OverAdmin, admin.ModelAdmin):
     fieldsets       = conf.admin.task_fieldsets
     list_display    = conf.admin.task_list_display
     readonly_fields = conf.admin.task_readonly_fields
+    list_filter     = conf.admin.task_list_filter
