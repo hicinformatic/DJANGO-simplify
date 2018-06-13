@@ -20,7 +20,7 @@ class Config(object):
 
     class log(object):
         logger = 'logger_{}'
-        log_type = 'file'
+        log_type = 'console'
         log_level = 7
         format_syslog = '[{}] {}'
         format_file = '{}:{}:{}.{} - {} | [{}] {}\n'

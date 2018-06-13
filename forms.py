@@ -69,14 +69,14 @@ class AuthenticationLDAPForm(AuthenticationForm):
                     self.add_error(None, error)
                 else:
                     self.user.add_method(method['id'])
-                    if method['is_active'] == 'True':   self.user.is_active(True)
-                    if method['is_staff'] == 'True':     self.user.is_staff(True)
+                    if method['is_active'] == 'True': self.user.is_active(True)
+                    if method['is_staff'] == 'True': self.user.is_staff(True)
                     if method['is_superuser'] == 'True': self.user.is_superuser(True)
                     self.user.add_groups(method['groups'])
                     self.user.add_permissions(method['permissions'])
                     if method['field_firstname'] != 'None': self.user.correspondence('first_name', ldap.correspondence(method['field_firstname']))
-                    if method['field_lastname'] != 'None':  self.user.correspondence('last_name', ldap.correspondence(method['field_lastname']))
-                    if method['field_email'] != 'None':     self.user.correspondence('email', ldap.correspondence(method['field_email']))
+                    if method['field_lastname'] != 'None': self.user.correspondence('last_name', ldap.correspondence(method['field_lastname']))
+                    if method['field_email'] != 'None': self.user.correspondence('email', ldap.correspondence(method['field_email']))
         else:
             self.add_error(None, conf.error.no_ldapcache)
         return self.user.one_is_true
