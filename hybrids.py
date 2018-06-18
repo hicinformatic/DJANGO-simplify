@@ -82,7 +82,7 @@ class HybridUpdateView(Hybrid, UpdateView):
     def form_valid(self, form):
         obj = form.save(commit=False)
         obj.update_by = self.request.user.username
-        return super(HybridCreateView, self).form_valid(form)
+        return super(HybridUpdateView, self).form_valid(form)
 
 #██╗     ██╗███████╗████████╗██╗   ██╗██╗███████╗██╗    ██╗
 #██║     ██║██╔════╝╚══██╔══╝██║   ██║██║██╔════╝██║    ██║

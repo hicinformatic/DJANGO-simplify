@@ -12,8 +12,8 @@ class ScriptAdminForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super(ScriptAdminForm, self).clean()
-        if conf.choices.method_method and hasattr(cleaned_data['code'], 'read'):
-            cleaned_data['code'] = cleaned_data['code'].read().decode('utf-8') 
+        if hasattr(cleaned_data['code'], 'read'):
+            cleaned_data['code'] = cleaned_data['code'].read().decode('utf-8')
         return cleaned_data
 
 class MethodAdminForm(forms.ModelForm):

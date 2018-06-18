@@ -14,9 +14,10 @@ class Config(object):
         cache        = '%s/cache' % app
         tasks        = '%s/tasks' % app
         logs         = '%s/logs' % app
-        images       = settings.STATIC_URL
+        static_url   = settings.STATIC_URL
+        static_root  = settings.STATIC_ROOT
         settings     = settings.SETTINGS_DIR
-        #images       = '%s/%s' % (settings.STATIC_ROOT, 'images')
+
 
     class log(object):
         logger = 'logger_{}'
