@@ -18,7 +18,6 @@ class Config(object):
         static_root  = settings.STATIC_ROOT
         settings     = settings.SETTINGS_DIR
 
-
     class log(object):
         logger = 'logger_{}'
         log_type = 'console'
@@ -117,8 +116,8 @@ class Config(object):
             (recurrence_hours,   _('Every hour')),
             (recurrence_days,    _('Everyday')),
         )
-        ldap_uri_ldap  = 'ldap://'
-        ldap_uri_ldaps = 'ldaps://'
+        ldap_uri_ldap  = 'LDAP'
+        ldap_uri_ldaps = 'LDAPS'
         ldap_uri = (
             (ldap_uri_ldap, 'ldap://'),
             (ldap_uri_ldaps, 'ldaps://'),
@@ -160,7 +159,7 @@ class Config(object):
         field_firstname = _('Firstname correspondence')
         field_lastname  = _('Lastname correspondence')
         field_email     = _('Email correspondence')
-        heck            = _('Check')
+        check            = _('Check')
         user            = _('User')
         username        = _('Username')
         email           = _('Email address')
@@ -313,6 +312,7 @@ class Config(object):
     class admin(object):
         site_header              = _('Django administration')
         index_title              = _('Site administration (assisted by Simplify)')
+        show_permissions         = False
         verbose_name             = _('Authentication and Authorization')
         login                    = _('Log in')
         log_fieldsets            = (_('Log informations'), {'fields': ('update_by', 'date_create', 'date_update', 'error', 'message')})
@@ -345,13 +345,14 @@ class Config(object):
         script_list_display      = ('name', 'script', 'recurrence', 'admin_download_script')
         script_readonly_fields   = ('update_by', 'date_create', 'date_update', 'error', 'script_path', 'admin_download_script')
         script_list_filter       = ('recurrence',)
-        task_fieldsets           = ((None, { 'fields': ('script', 'default', 'status', 'info', 'error', 'command', 'local_check')}),
+        task_fieldsets           = ((None, { 'fields': ('script', 'default', 'status', 'command', 'local_check')}),
                                    (log_fieldsets))
         task_list_display        = ('__str__', 'status')
         task_readonly_fields     = ('update_by', 'date_create', 'date_update', 'error',  'command', 'info', 'local_check')
         task_list_filter         = ('script', 'default')
 
-    class task(object):
+    class scheduler(object):
+        enable     = True
         robot      = 'robot'
         password   = 'de76FBE368fAc.9--bfaAaA.af-a7_E5'
         can_run    = 'check_os'
@@ -384,7 +385,7 @@ class Config(object):
         option = 'LDAP'
         fields_check = ['ldap_host', 'ldap_define', 'ldap_scope', 'ldap_version', 'ldap_bind', 'ldap_password', 'ldap_user', 'ldap_search', 'ldap_tls_cacertfile']
 
-Config.task.maintain = [Config.choices.task_check,Config.choices.task_cache,Config.choices.task_clean_crt,Config.choices.task_clean_scp]
+Config.scheduler.maintain = [Config.choices.task_check,Config.choices.task_cache,Config.choices.task_clean_crt,Config.choices.task_clean_scp]
 
 if hasattr(settings, Config.override):
     for config,configs in getattr(settings, Config.override).items():

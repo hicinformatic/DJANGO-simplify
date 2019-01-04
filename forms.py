@@ -48,7 +48,7 @@ class AuthenticationLDAPForm(AuthenticationForm):
         return self.cleaned_data
 
     def cycle(self, username, password):
-        from .hybrids import FakeModel
+        from .models import FakeModel
         cache = '{}/{}.json'.format(conf.directory.cache, conf.ldap.name)
         from .methods.method_ldap import method_ldap
         import ldap as ldap_orig

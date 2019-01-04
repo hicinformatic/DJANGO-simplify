@@ -5,7 +5,7 @@ from django.urls import (re_path, path)
 
 from .apps import SimplifyConfig as conf
 from .forms import (ScriptAdminForm, MethodAdminForm)
-from .models import (Group, Method, User, Script, Task)
+from .models import (Group, Method, User)
 
 class SimplifyAdminSite(admin.AdminSite):
     site_header = conf.admin.site_header
@@ -63,10 +63,11 @@ class OverAdmin(object):
         obj.update_by = getattr(request.user, conf.user.username_field)
         super(OverAdmin, self).save_model(request, obj, form, change)
 
-#from django.contrib.auth.models import Permission
-#@admin.register(Permission)
-#class PermissionAdmin(admin.ModelAdmin):
-#    pass
+if conf.admin.show_permissions:
+    from django.contrib.auth.models import Permission
+    @admin.register(Permission)
+    class PermissionAdmin(admin.ModelAdmin):
+        pass
 
 @admin.register(Group)
 class CustomGroup(GroupAdmin):
@@ -87,17 +88,19 @@ if conf.choices.method_method:
         search_fields     = conf.admin.method_search_fields
 
         def get_urls(self):
-            from .views import (MethodAdminCheck, TaskAdminMaintain)
             conf_path = {'ns': conf.namespace, 'ext': conf.extension.regex}
             urlpatterns = super(MethodAdmin, self).get_urls()
-            urlpatterns = [
-                re_path(r'(?P<pk>\d+)/check(\.|/)?(?P<extension>({ext}))?/?$'.format(**conf_path),
+            urlpatternsmore = []
+            from .views import MethodAdminCheck
+            urlpatternsmore.append(re_path(r'(?P<pk>\d+)/check(\.|/)?(?P<extension>({ext}))?/?$'.format(**conf_path),
                     self.admin_site.admin_view(MethodAdminCheck.as_view()),
-                    name='admin-method-check'),
-                re_path(r'(?P<pk>\d+)/maintain(\.|/)?(?P<extension>({ext}))?/?$'.format(**conf_path),
-                    self.admin_site.admin_view(TaskAdminMaintain.as_view()),
-                    name='admin-task-maintain'),
-            ]+urlpatterns
+                    name='admin-method-check'))
+            #if conf.scheduler.enable:
+            #    from .views import TaskAdminMaintain
+            #    urlpatterns.append(re_path(r'(?P<pk>\d+)/maintain(\.|/)?(?P<extension>({ext}))?/?$'.format(**conf_path),
+            #        self.admin_site.admin_view(TaskAdminMaintain.as_view()),
+            #        name='admin-task-maintain'))
+            urlpatterns = urlpatternsmore + urlpatterns
             return urlpatterns
 
 @admin.register(User)
@@ -109,18 +112,20 @@ class CustomUserAdmin(OverAdmin, UserAdmin):
     readonly_fields   = conf.admin.user_readonly_fields
     list_filter       = conf.admin.user_list_filter
 
-@admin.register(Script)
-class ScriptAdmin(OverAdmin, admin.ModelAdmin):
-    form            = ScriptAdminForm
-    fieldsets       = conf.admin.script_fieldsets
-    list_display    = conf.admin.script_list_display
-    readonly_fields = conf.admin.script_readonly_fields
-    list_filter     = conf.admin.script_list_filter
+if conf.scheduler.enable:
+    from .models import (Script, Task)
+    @admin.register(Script)
+    class ScriptAdmin(OverAdmin, admin.ModelAdmin):
+        form            = ScriptAdminForm
+        fieldsets       = conf.admin.script_fieldsets
+        list_display    = conf.admin.script_list_display
+        readonly_fields = conf.admin.script_readonly_fields
+        list_filter     = conf.admin.script_list_filter
 
-@admin.register(Task)
-class TaskAdmin(OverAdmin, admin.ModelAdmin):
-    change_list_template = 'simplify/html/admin_task_changelist.html'
-    fieldsets       = conf.admin.task_fieldsets
-    list_display    = conf.admin.task_list_display
-    readonly_fields = conf.admin.task_readonly_fields
-    list_filter     = conf.admin.task_list_filter
+    @admin.register(Task)
+    class TaskAdmin(OverAdmin, admin.ModelAdmin):
+        change_list_template = 'simplify/html/admin_task_changelist.html'
+        fieldsets       = conf.admin.task_fieldsets
+        list_display    = conf.admin.task_list_display
+        readonly_fields = conf.admin.task_readonly_fields
+        list_filter     = conf.admin.task_list_filter

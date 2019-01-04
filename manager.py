@@ -1,8 +1,29 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth import get_user_model
+from django.db import models
 
 from .apps import SimplifyConfig as conf
+logger = conf.logger
 
+#███╗   ███╗███████╗████████╗██╗  ██╗ ██████╗ ██████╗ 
+#████╗ ████║██╔════╝╚══██╔══╝██║  ██║██╔═══██╗██╔══██╗
+#██╔████╔██║█████╗     ██║   ███████║██║   ██║██║  ██║
+#██║╚██╔╝██║██╔══╝     ██║   ██╔══██║██║   ██║██║  ██║
+#██║ ╚═╝ ██║███████╗   ██║   ██║  ██║╚██████╔╝██████╔╝
+#╚═╝     ╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚═════╝
+class MethodManager(models.manager):
+    def write_certificate(self):
+        with open(self.certificate_path, 'w') as cert_file:
+            cert_file.write(self.certificate)
+        cert_file.closed
+
+
+#██╗   ██╗███████╗███████╗██████╗ 
+#██║   ██║██╔════╝██╔════╝██╔══██╗
+#██║   ██║███████╗█████╗  ██████╔╝
+#██║   ██║╚════██║██╔══╝  ██╔══██╗
+#╚██████╔╝███████║███████╗██║  ██║
+# ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝
 class UserManager(BaseUserManager):
     use_in_migrations = True
     one_is_true  = False
